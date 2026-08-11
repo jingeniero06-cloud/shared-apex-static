@@ -1,0 +1,29 @@
+﻿{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "fleet-static-worker",
+  "main": "src/worker.js",
+  "compatibility_date": "2024-11-11",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 0.1
+  },
+  "kv_namespaces": [
+    {
+      "binding": "HTML_KV",
+      "id": "b5179c7b51b243b08248005087441527"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "ASSETS_BUCKET",
+      "bucket_name": "fleet-static-assets"
+    }
+  ],
+  "vars": {
+    "ORIGIN_PROTOCOL": "https",
+    "HOSTING_IP": "174.136.29.214"
+  }
+}
+
