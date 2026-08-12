@@ -88,6 +88,20 @@ Pause between waves if failure rate &gt; 0 or verify flakes.
 - Summary CSV: OK count = attempted  
 - Stay-WP list untouched  
 
+## Post-cutover audit checklist
+
+Run Sean’s audit (`Invoke-AuditStaticSite.ps1` / portfolio audit) and fail the site if any of these are true:
+
+| Flag | Fail when |
+| --- | --- |
+| Missing files | CSS/JS/fonts/other assets 404 |
+| Pictures not showing | Image URLs on the page 404 |
+| Logo | Header/logo image missing or 404 |
+| No phone field | Contact form has no phone / tel input |
+| CallRail form tracking not detected on the page | No CallRail/CallTrk form-capture or swap script |
+| No reCAPTCHA spam protection on the form | No reCAPTCHA, hCaptcha, or Turnstile |
+| No form on this page | Homepage has no contact form markup |  
+
 ---
 
 ## Risks & mitigations
