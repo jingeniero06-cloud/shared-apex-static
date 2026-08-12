@@ -10,7 +10,7 @@
 
 ## Can the team use this?
 
-Yes. Clone this repo, add a local `.env` (never commit it), then run provision/migrate scripts against Michael’s Cloudflare account.
+Yes. **No GitHub required.** Receive this folder in the kit zip / shared drive, add a local `.env` (never share `.env`), then run provision/migrate scripts against Michael’s Cloudflare account.
 
 Fleet infra already exists in Cloudflare:
 
@@ -23,21 +23,22 @@ Fleet infra already exists in Cloudflare:
 
 ## Setup
 
-1. Clone:
+1. Unzip the kit so this folder sits at:
 
-```powershell
-git clone https://github.com/jingeniero06-cloud/shared-apex-static.git
-cd shared-apex-static
-git checkout cursor/shared-fleet-worker
+```text
+C:\Users\<You>\Downloads\shared-apex-static
 ```
+
+(alongside `static-conversion` and `static-fleet-handoff`)
 
 2. Create `.env` from the example (account id + fleet names are pre-filled):
 
 ```powershell
+cd "C:\Users\<You>\Downloads\shared-apex-static"
 Copy-Item .env.example .env
 ```
 
-3. Paste `CLOUDFLARE_API_TOKEN` into `.env` (get the token from the team lead — **do not commit `.env`**).
+3. Paste `CLOUDFLARE_API_TOKEN` into `.env` (get the token from the team lead — **do not share or email `.env`**).
 
 Token needs Workers, KV, R2, and Zone routes edit on the account.
 
@@ -55,14 +56,14 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Invoke-MigrateSitesToFleet.ps
 
 ## Verify
 
-Homepage should return `x-source: kv` (or warm into KV) and `x-fleet-host: <domain>`.
+Homepage should return `x-source: kv` (or warm into KV) and `x-fleet-host: <domain>`. Use a browser User-Agent (some zones block bare `curl`):
 
 ```powershell
-curl.exe -sI https://example-domain.com/ | findstr /i "x-source x-fleet-host HTTP"
+curl.exe -sI -A "Mozilla/5.0" https://example-domain.com/ | findstr /i "x-source x-fleet-host HTTP"
 ```
 
 ## Notes
 
 - Prefer copying real page HTML from the old per-site KV into the shared store, then switching routes. Warm-only cutover without HTML copy can 403 at origin.
-- `reports/` is local/gitignored — regenerate CSVs as needed.
-- Spike migrate of 50 sites may already be in progress or partially complete; check live `x-fleet-host` before re-running.
+- Keep `reports\option-a-queues\` in the shared kit if continuing Option A migrate waves.
+- Check live `x-fleet-host` before re-running migrate on a domain that may already be on the fleet.
