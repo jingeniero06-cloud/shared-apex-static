@@ -5,6 +5,9 @@
 #
 # Separate from `static-conversion`. Do not modify that folder for fleet work.
 
+**New teammate?** Start with the combined handoff package:  
+`..\static-fleet-handoff\README.md` (also see [`HANDOFF.md`](./HANDOFF.md)).
+
 ## Can the team use this?
 
 Yes. Clone this repo, add a local `.env` (never commit it), then run provision/migrate scripts against Michael’s Cloudflare account.
