@@ -1,8 +1,9 @@
 # Batch 1–7 → Shared Fleet Plan (1 Worker / 1 KV / 1 R2)
 
-**Status:** PLAN ONLY — do not run until approved  
-**Date:** 2026-08-12  
-**Repo:** `shared-apex-static` (do not modify `static-conversion`)
+**Status:** APPROVED IN PRINCIPLE (team meeting 2026-08-13) — Batches 1–3 already on fleet; remaining waves continue under this plan  
+**Date:** 2026-08-12 (status updated 2026-08-13)  
+**Repo:** `shared-apex-static` (do not modify `static-conversion`)  
+**Team SOP:** `..\static-fleet-handoff\SOP-FLEET-STATIC-WORKFLOW.md`
 
 ## Verdict
 

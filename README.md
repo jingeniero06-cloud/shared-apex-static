@@ -8,6 +8,9 @@
 **New teammate?** Start with the combined handoff package:  
 `..\static-fleet-handoff\README.md` (also see [`HANDOFF.md`](./HANDOFF.md)).
 
+**Team SOP** (fleet decision, convert/rollback loop, SEO exemptions):  
+`..\static-fleet-handoff\SOP-FLEET-STATIC-WORKFLOW.md`
+
 ## Can the team use this?
 
 Yes. **No GitHub required.** Receive this folder in the kit zip / shared drive, add a local `.env` (never share `.env`), then run provision/migrate scripts against Michael’s Cloudflare account.
