@@ -162,7 +162,9 @@ function Set-FleetRoutes([string]$ZoneId, [string]$Domain) {
 }
 
 function Probe([string]$Url) {
-  $hdr = Join-Path $env:TEMP ('p-' + [guid]::NewGuid().ToString('N') + '.hdr')
+  $probeDir = Join-Path $env:USERPROFILE 'AppData\Local\Temp'
+  New-Item -ItemType Directory -Path $probeDir -Force | Out-Null
+  $hdr = Join-Path $probeDir ('p-' + [guid]::NewGuid().ToString('N') + '.hdr')
   $code = & curl.exe -sS -L -m 25 -A 'Mozilla/5.0' -D $hdr -o NUL $Url -w '%{http_code}' 2>$null
   $raw = if (Test-Path $hdr) { Get-Content $hdr -Raw } else { '' }
   Remove-Item $hdr -Force -ErrorAction SilentlyContinue

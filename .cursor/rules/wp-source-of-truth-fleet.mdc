@@ -1,0 +1,33 @@
+---
+description: WordPress is source of truth for fleet static sites
+alwaysApply: true
+---
+
+# Fleet static = live WordPress
+
+WordPress on hosting IP `174.136.29.214` is the source of truth. Static must match the **current** WP snapshot, never an old KV copy.
+
+## Refresh / cutover (use this, not KV-to-KV migrate)
+
+Live WP → scrape via hosting IP → `HTML_FLEET` + `fleet-static-assets` → `fleet-static-worker`.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\Invoke-WpOriginToFleet.ps1 -SitesCsv .\reports\{csv} -HostingIp 174.136.29.214
+```
+
+Do **not** use `Invoke-MigrateSitesToFleet.ps1` to refresh content (that copies stale per-site KV).
+Do **not** use `static-conversion\scripts\Invoke-DeepAssetSync.ps1` on fleet sites (it writes `{domain}-worker` keys, not `{host}:html:` / `{host}:asset:`).
+
+## Edit workflow
+
+1. Rollback to WordPress (Worker route off; keep KV/R2)
+2. Edit and verify on live WP
+3. Scrape latest WP into `HTML_FLEET` + `fleet-static-assets`
+4. Switch routes back to `fleet-static-worker`
+5. Verify public site: `200`, `x-source: kv`, `x-fleet-host`, HTML/CSS/JS/images/forms match origin WP
+
+## Guardrails
+
+- Stay-WordPress excludes: never convert or fleet-migrate
+- Do not delete old per-site Workers until the fleet snapshot is verified and stable
+- After refresh, confirm no stale KV content is still being served
