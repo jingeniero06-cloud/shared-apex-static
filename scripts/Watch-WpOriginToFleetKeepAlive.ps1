@@ -126,7 +126,8 @@ function Write-LiveStatus([bool]$Alive, [int]$RemainCount) {
       if ($rows.Count -gt 0) { $last = $rows[-1].Domain }
     }
   }
-  $job = if ($Alive) { 'RUNNING' } elseif ($RemainCount -le 0) { 'DONE' } else { 'RESTARTING' }
+  $pauseNote = 'After 208: Batches 4-6 PAUSED (do not start)'
+  $job = if ($Alive) { 'RUNNING' } elseif ($RemainCount -le 0) { 'DONE - remaining paused' } else { 'RESTARTING' }
   @"
 208-site WP -> fleet refresh
 Updated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
@@ -135,6 +136,7 @@ Finished sites: $done / $QueueN
 Current: $current (html pages on disk: $pages)
 Last finished: $last
 Keepalive: ON (auto-restart if scrape dies)
+$pauseNote
 "@ | Set-Content -LiteralPath $Status -Encoding UTF8
 }
 
@@ -147,7 +149,7 @@ try {
     $alive = Test-ScrapeHealthy
 
     if ($remain.Count -eq 0) {
-      Write-KeepLog '208 queue complete; keepalive idle'
+      Write-KeepLog '208 queue complete; PAUSED batches 4-6; keepalive idle'
       Write-LiveStatus $false 0
       break
     }

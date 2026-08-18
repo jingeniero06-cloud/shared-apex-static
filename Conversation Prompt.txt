@@ -1,0 +1,5 @@
+1.Convert {domain} to apex static with Invoke-DevSecSiProvision.ps1 then Invoke-DeepAssetSync.ps1 so HTML/media are fully synced, verify x-source: kv, and run the static audit.
+
+2.Roll {domain} back to WordPress with Invoke-RevertToWordPress.ps1, clear wp-admin WAF so editors can log in, and keep Worker/KV/R2 in place.
+
+3.After that WordPress rollback, rescrape {domain} with Invoke-DevSecSiProvision.ps1 -SkipProvision then Invoke-DeepAssetSync.ps1 so static is fully synced again from live WP.

@@ -31,29 +31,31 @@ $proc = Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
   Select-Object -First 1
 $running = $null -ne $proc
 
-$finished = $rows.Count
-$hardFail = @($rows | Where-Object { $_.Error -and $_.Error -notmatch 'MYPC~1' -and $_.After -notmatch '200/kv' }).Count
 $okAfter = @($rows | Where-Object { $_.After -match '200/kv' }).Count
+$finished = $okAfter
+$hardFail = @($rows | Where-Object {
+  $_.After -and $_.After -notmatch '200/kv' -and $_.Error -and $_.Error -notmatch 'MYPC~1'
+}).Count
 
-$queue = @()
-if (Test-Path $QueueCsv) {
-  $queue = @(Import-Csv -LiteralPath $QueueCsv | ForEach-Object { $_.Domain.Trim().ToLower() })
-}
 $currentDomain = ''
 $currentIdx = $finished
 $currentPages = 0
+$bestHtml = $null
+$bestDir = $null
+foreach ($d in $dirs) {
+  $html = Get-ChildItem $d.FullName -Recurse -Filter 'page-*.html' -ErrorAction SilentlyContinue |
+    Sort-Object LastWriteTime | Select-Object -Last 1
+  if ($html -and (-not $bestHtml -or $html.LastWriteTime -gt $bestHtml.LastWriteTime)) {
+    $bestHtml = $html
+    $bestDir = $d
+  }
+}
 if ($running) {
   $currentIdx = [Math]::Min($finished + 1, $RefreshQueue)
-  if ($finished -lt $queue.Count) { $currentDomain = $queue[$finished] }
-  elseif ($dir) {
-    $siteDir = Get-ChildItem $dir.FullName -Directory | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-    if ($siteDir) { $currentDomain = $siteDir.Name }
-  }
-  if ($dir -and $currentDomain) {
-    $pdir = Join-Path $dir.FullName $currentDomain
-    if (Test-Path $pdir) {
-      $currentPages = @(Get-ChildItem $pdir -Filter 'page-*.html' -ErrorAction SilentlyContinue).Count
-    }
+  if ($bestHtml) {
+    $currentDomain = $bestHtml.Directory.Name
+    $currentPages = @(Get-ChildItem $bestHtml.Directory.FullName -Filter 'page-*.html' -ErrorAction SilentlyContinue).Count
+    $dir = $bestDir
   }
 }
 
@@ -77,7 +79,7 @@ if ($running -and $finished -ge 2 -and $elapsedMin -gt 0) {
 $inProgress = if ($running -and $currentDomain) { 1 } else { 0 }
 $queuedRefresh = [Math]::Max(0, $RefreshQueue - $finished - $inProgress)
 $wpSynced = $CanaryDone + $finished
-$runStatus = if ($running) { 'running' } elseif ($finished -ge $RefreshQueue) { 'succeeded' } else { 'idle' }
+$runStatus = if ($running) { 'running' } elseif ($finished -ge $RefreshQueue) { 'paused' } else { 'idle' }
 
 $recent = @()
 $idx = 0
@@ -111,6 +113,7 @@ $snap = [ordered]@{
   elapsedMin = $elapsedMin
   etaMin = $etaMin
   b4 = $B4; b5 = $B5; b6 = $B6
+  pauseRemaining = $true
   wpSynced = $wpSynced
   recent = $recent
 }

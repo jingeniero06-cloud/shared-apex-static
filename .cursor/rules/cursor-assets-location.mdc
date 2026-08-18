@@ -1,0 +1,14 @@
+---
+description: Save generated and non-repo files to Downloads/cursor-assets
+alwaysApply: true
+---
+
+# Unrelated files go to Downloads/cursor-assets
+
+`shared-apex-static` is only for fleet/static conversion work.
+
+Save generated images, reference photos, personal notes, and any file **not** part of static conversion to:
+
+`C:\Users\My PC\Downloads\cursor-assets`
+
+Do **not** create folders like `pcb-fuse-reference` or other off-topic assets inside this repo.

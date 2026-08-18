@@ -1,0 +1,8 @@
+﻿208-site WP -> fleet refresh
+Updated: 2026-08-17 07:10:55
+Job: DONE - remaining paused
+Finished sites: 208 / 208
+Current: zebulonfoundationrepair.com (html pages on disk: 0)
+Last finished: zebulonfoundationrepair.com
+Keepalive: ON (auto-restart if scrape dies)
+After 208: Batches 4-6 PAUSED (do not start)
