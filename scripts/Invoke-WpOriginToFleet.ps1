@@ -166,6 +166,7 @@ function Put-FleetKv([string]$Key, [byte[]]$Bytes) {
 }
 
 function Put-FleetR2([string]$ObjectKey, [byte[]]$Bytes, [string]$ContentType, [string]$TmpDir) {
+  if ($ObjectKey -match '(?i)\.svg$') { $ContentType = 'image/svg+xml' }
   $tmp = Join-Path $TmpDir ('r2-' + [guid]::NewGuid().ToString('N'))
   [IO.File]::WriteAllBytes($tmp, $Bytes)
   try {

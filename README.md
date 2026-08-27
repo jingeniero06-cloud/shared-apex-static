@@ -1,6 +1,6 @@
 # Shared Apex Static — fleet Worker for many domains
 #
-# Architecture: ONE Worker + ONE KV + ONE R2
+# Architecture: shared KV/R2; extra Worker if routed-zone cap requires it
 # Keys: `{hostname}:html:{path}` and `{hostname}:asset:{path}`
 #
 # Separate from `static-conversion`. Do not modify that folder for fleet work.
@@ -19,7 +19,8 @@ Fleet infra already exists in Cloudflare:
 
 | Resource | Name / id |
 | --- | --- |
-| Worker | `fleet-static-worker` |
+| Worker | `fleet-static-worker` (live routes) |
+| Worker 2 | `fleet-static-worker-server-1` (same KV/R2; new batches after B1–7) |
 | KV | `HTML_FLEET` |
 | R2 | `fleet-static-assets` |
 | Hosting IP | `174.136.29.214` |
@@ -64,6 +65,16 @@ Homepage should return `x-source: kv` (or warm into KV) and `x-fleet-host: <doma
 ```powershell
 curl.exe -sI -A "Mozilla/5.0" https://example-domain.com/ | findstr /i "x-source x-fleet-host HTTP"
 ```
+
+## Adam provision API (`fleet: true`)
+
+Same endpoint. Preview route only (`static.{domain}/*`). Shared `HTML_FLEET` + `fleet-static-assets`. Does not touch apex/www.
+
+- **Batches 1–7:** omit `workerName` → `fleet-static-worker`
+- **New sites:** `"workerName":"fleet-static-worker-server-1"`
+- `/scrape` with `"fleet": true` accepts the same field
+
+Do not omit `workerName` on a new-batch domain or the API will attach `static.*` onto server 2.
 
 ## Notes
 

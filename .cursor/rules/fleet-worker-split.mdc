@@ -1,0 +1,17 @@
+---
+description: Two fleet Workers and Adam API workerName
+alwaysApply: true
+---
+
+# Fleet Worker split + Adam API
+
+- Server 2 `fleet-static-worker` = Batches 1–7 live apex. Do not move B1–7 onto server 1.
+- Server 1 `fleet-static-worker-server-1` = new batches after B1–7.
+- Both share KV `HTML_FLEET` + R2 `fleet-static-assets`. Keys: `{host}:html:` / `{host}:asset:`. Preview uses `static.{domain}:…`.
+
+Adam `POST …/provision-originless` (and `/scrape` with `"fleet": true`):
+
+- Omit `workerName` → attaches `static.{domain}/*` to `fleet-static-worker`. Use for B1–7 only.
+- `"workerName":"fleet-static-worker-server-1"` → same scrape and preview-only route on server 1. Use for new sites.
+- Never omit `workerName` on a new-batch domain (it would land on server 2).
+- API does not touch apex/www. Apex cutover stays on us after QA.

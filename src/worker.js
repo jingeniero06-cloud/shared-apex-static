@@ -102,8 +102,24 @@ function isXmlLikePath(pathname) {
   );
 }
 
+function isSvgPath(pathname) {
+  return (pathname || "").toLowerCase().endsWith(".svg");
+}
+
+/**
+ * R2 / origin often label SVGs as application/xml (Adam API, or a naive
+ * "content-type includes xml" check on image/svg+xml). Browsers will not
+ * paint <img src="*.svg"> unless Content-Type is image/svg+xml.
+ */
+function responseContentType(pathname, storedCt) {
+  if (isSvgPath(pathname)) return "image/svg+xml";
+  if (isXmlLikePath(pathname)) return "application/xml; charset=utf-8";
+  return storedCt || guessContentType(pathname);
+}
+
 function isRewritableTextAsset(pathname, contentType) {
-  const lowerPath = pathname.toLowerCase();
+  const lowerPath = (pathname || "").toLowerCase();
+  if (isSvgPath(lowerPath)) return false;
   const lowerContentType = (contentType || guessContentType(pathname)).toLowerCase();
   return (
     lowerPath.endsWith(".css") ||
@@ -115,7 +131,7 @@ function isRewritableTextAsset(pathname, contentType) {
     lowerContentType.startsWith("text/") ||
     lowerContentType.includes("javascript") ||
     lowerContentType.includes("json") ||
-    lowerContentType.includes("xml")
+    (lowerContentType.includes("xml") && !lowerContentType.includes("svg"))
   );
 }
 
@@ -188,10 +204,9 @@ export default {
         if (isAsset) {
           const obj = await env.ASSETS_BUCKET.get(assetKey);
           if (obj) {
-            const ct =
-              (obj.httpMetadata && obj.httpMetadata.contentType) ||
-              guessContentType(normalizedPath);
-            if (isRewritableTextAsset(normalizedPath, ct)) {
+            const storedCt = obj.httpMetadata && obj.httpMetadata.contentType;
+            const ct = responseContentType(normalizedPath, storedCt);
+            if (isRewritableTextAsset(normalizedPath, storedCt || ct)) {
               const assetText = await obj.text();
               const rewritten = rewriteUrls(
                 assetText,
@@ -202,7 +217,7 @@ export default {
               return new Response(rewritten, {
                 status: 200,
                 headers: {
-                  "content-type": xmlLike ? "application/xml; charset=utf-8" : ct,
+                  "content-type": ct,
                   "cache-control": assetCache,
                   "x-source": "r2",
                   "x-fleet-host": host,
@@ -213,7 +228,7 @@ export default {
             return new Response(obj.body, {
               status: 200,
               headers: {
-                "content-type": xmlLike ? "application/xml; charset=utf-8" : ct,
+                "content-type": ct,
                 "cache-control": assetCache,
                 "x-source": "r2",
                 "x-fleet-host": host,
@@ -273,13 +288,14 @@ export default {
           if (isAsset) {
             const staleObj = await env.ASSETS_BUCKET.get(assetKey);
             if (staleObj) {
-              const ct =
-                (staleObj.httpMetadata && staleObj.httpMetadata.contentType) ||
-                guessContentType(normalizedPath);
+              const ct = responseContentType(
+                normalizedPath,
+                staleObj.httpMetadata && staleObj.httpMetadata.contentType
+              );
               return new Response(staleObj.body, {
                 status: 200,
                 headers: {
-                  "content-type": xmlLike ? "application/xml; charset=utf-8" : ct,
+                  "content-type": ct,
                   "cache-control": assetCache,
                   "x-source": "r2-stale",
                   "x-fleet-host": host,
@@ -313,8 +329,11 @@ export default {
 
       const originContentType = originResp.headers.get("content-type") || "";
       const originIsXml =
-        xmlLike ||
-        (originContentType.includes("xml") && !originContentType.includes("html"));
+        !isSvgPath(normalizedPath) &&
+        (xmlLike ||
+          (originContentType.includes("xml") &&
+            !originContentType.includes("html") &&
+            !originContentType.includes("svg")));
 
       if (!isAsset && !originIsXml) {
         let htmlBody = await originResp.text();
@@ -332,9 +351,10 @@ export default {
       }
 
       const buffer = await originResp.arrayBuffer();
-      const ct = originIsXml
-        ? "application/xml; charset=utf-8"
-        : originContentType || guessContentType(normalizedPath);
+      const ct = responseContentType(
+        normalizedPath,
+        originIsXml ? "application/xml; charset=utf-8" : originContentType
+      );
       let responseBody = buffer;
       let bodyToStore = buffer;
       if (isRewritableTextAsset(normalizedPath, ct)) {
