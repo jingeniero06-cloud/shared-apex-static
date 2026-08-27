@@ -1,10 +1,16 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-  Create shared KV + R2 and deploy fleet-static-worker.
+  Create shared KV + R2 and deploy a fleet Worker (same HTML_FLEET + fleet-static-assets).
+.NOTES
+  Default Worker is fleet-static-worker. Pass -WorkerName to deploy another script
+  (e.g. fleet-static-worker-server-1) without moving live routes or overwriting fleet-infra.json.
 #>
 param(
   [string] $EnvFile,
+  [string] $WorkerName,
+  [string] $StateFile,
+  [switch] $SkipWranglerUpdate,
   [switch] $Force
 )
 
@@ -20,7 +26,10 @@ Get-Content $EnvFile -Encoding UTF8 | ForEach-Object {
 
 $AccountId = $vars['CLOUDFLARE_ACCOUNT_ID']
 $Token = $vars['CLOUDFLARE_API_TOKEN']
-$WorkerName = if ($vars['FLEET_WORKER_NAME']) { $vars['FLEET_WORKER_NAME'] } else { 'fleet-static-worker' }
+$DefaultWorker = 'fleet-static-worker'
+if (-not $WorkerName) {
+  $WorkerName = if ($vars['FLEET_WORKER_NAME']) { $vars['FLEET_WORKER_NAME'] } else { $DefaultWorker }
+}
 $KvTitle = if ($vars['FLEET_KV_TITLE']) { $vars['FLEET_KV_TITLE'] } else { 'HTML_FLEET' }
 $R2Name = if ($vars['FLEET_R2_BUCKET']) { $vars['FLEET_R2_BUCKET'] } else { 'fleet-static-assets' }
 $HostingIp = if ($vars['HOSTING_IP']) { $vars['HOSTING_IP'] } else { '174.136.29.214' }
@@ -106,11 +115,12 @@ $resp = Invoke-RestMethod -Method PUT -Uri $uri -Headers @{ Authorization = "Bea
 if (-not $resp.success) { throw ($resp.errors | ConvertTo-Json -Compress) }
 Write-Host "Deployed $WorkerName" -ForegroundColor Green
 
-# Update wrangler.jsonc binding id
-$wrangler = Join-Path $Root 'wrangler.jsonc'
-$txt = Get-Content $wrangler -Raw
-$txt = $txt -replace '"id":\s*"[^"]*"', "`"id`": `"$kvId`""
-Set-Content -LiteralPath $wrangler -Value $txt -Encoding UTF8
+if (-not $SkipWranglerUpdate -and $WorkerName -eq $DefaultWorker) {
+  $wrangler = Join-Path $Root 'wrangler.jsonc'
+  $txt = Get-Content $wrangler -Raw
+  $txt = $txt -replace '"id":\s*"[^"]*"', "`"id`": `"$kvId`""
+  Set-Content -LiteralPath $wrangler -Value $txt -Encoding UTF8
+}
 
 $state = [ordered]@{
   timestamp = (Get-Date).ToString('o')
@@ -119,9 +129,19 @@ $state = [ordered]@{
   kvTitle = $KvTitle
   r2Bucket = $R2Name
   hostingIp = $HostingIp
+  sharesStorageWith = $DefaultWorker
+  routesAttached = $false
 }
-$statePath = Join-Path $Root 'reports\fleet-infra.json'
-New-Item -ItemType Directory -Path (Split-Path $statePath) -Force | Out-Null
-($state | ConvertTo-Json -Depth 5) | Set-Content $statePath -Encoding UTF8
-Write-Host "State: $statePath" -ForegroundColor Magenta
-Write-Host "FLEET_READY worker=$WorkerName kv=$kvId r2=$R2Name" -ForegroundColor Green
+if (-not $StateFile) {
+  if ($WorkerName -eq $DefaultWorker) {
+    $StateFile = Join-Path $Root 'reports\fleet-infra.json'
+  } else {
+    $StateFile = Join-Path $Root ("reports\fleet-infra-{0}.json" -f $WorkerName)
+  }
+} elseif (-not [IO.Path]::IsPathRooted($StateFile)) {
+  $StateFile = Join-Path $Root $StateFile
+}
+New-Item -ItemType Directory -Path (Split-Path $StateFile) -Force | Out-Null
+($state | ConvertTo-Json -Depth 5) | Set-Content $StateFile -Encoding UTF8
+Write-Host "State: $StateFile" -ForegroundColor Magenta
+Write-Host "FLEET_READY worker=$WorkerName kv=$kvId r2=$R2Name (no routes attached)" -ForegroundColor Green

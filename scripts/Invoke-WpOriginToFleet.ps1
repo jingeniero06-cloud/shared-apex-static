@@ -50,7 +50,10 @@ function Get-ContentType([string]$Path) {
     '\.woff2$' { return 'font/woff2' }
     '\.woff$'  { return 'font/woff' }
     '\.ttf$'   { return 'font/ttf' }
+    '\.eot$'   { return 'application/vnd.ms-fontobject' }
+    '\.otf$'   { return 'font/otf' }
     '\.xml$'   { return 'application/xml; charset=utf-8' }
+    '\.xsl$'   { return 'application/xml; charset=utf-8' }
     '\.txt$'   { return 'text/plain; charset=utf-8' }
     '\.pdf$'   { return 'application/pdf' }
     default    { return 'application/octet-stream' }
@@ -109,20 +112,48 @@ function Extract-InternalLinks([string]$html, [string]$Domain) {
 function Extract-AssetPaths([string]$html) {
   $seen = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
   if ([string]::IsNullOrEmpty($html)) { return @() }
-  $rx = '(?:src|href|content)=["'']([^"'']+/wp-content/[^"'']+)["'']'
-  foreach ($m in [regex]::Matches($html, $rx, 'IgnoreCase')) {
-    $u = $m.Groups[1].Value.Trim()
-    try {
-      if ($u -match '^https?://') { $u = ([uri]$u).AbsolutePath }
-    } catch { continue }
-    $u = $u.Split('?')[0]
-    if ($u -match '^/wp-content/' -and $u -match '\.(png|jpe?g|webp|gif|svg|avif|ico|css|js|woff2?|ttf|eot)$') {
+  foreach ($m in [regex]::Matches($html, '(?:src|href|content|srcset)=["'']([^"'']+)["'']', 'IgnoreCase')) {
+    foreach ($part in @($m.Groups[1].Value -split '[\s,]+')) {
+      $u = $part.Trim()
+      try { if ($u -match '^https?://') { $u = ([uri]$u).AbsolutePath } } catch { continue }
+      $u = $u.Split('?')[0].Split('#')[0]
+      if ($u -match '^/wp-(content|includes)/' -and $u -match '\.(png|jpe?g|webp|gif|svg|avif|ico|css|js|mjs|woff2?|ttf|eot|otf)$') {
+        [void]$seen.Add($u)
+      }
+    }
+  }
+  foreach ($m in [regex]::Matches($html, 'url\(([^)]+)\)', 'IgnoreCase')) {
+    $u = $m.Groups[1].Value.Trim().Trim('"').Trim("'").Split('?')[0].Split('#')[0]
+    try { if ($u -match '^https?://') { $u = ([uri]$u).AbsolutePath } } catch { continue }
+    if ($u -match '^/wp-(content|includes)/' -and $u -match '\.(png|jpe?g|webp|gif|svg|avif|ico|css|js|mjs|woff2?|ttf|eot|otf)$') {
       [void]$seen.Add($u)
     }
   }
   $rx2 = '/wp-content/uploads/[0-9]{4}/[0-9]{2}/[A-Za-z0-9_\-\.%]+\.(?:png|jpe?g|webp|gif|svg|avif|ico)'
   foreach ($m in [regex]::Matches($html, $rx2, 'IgnoreCase')) { [void]$seen.Add($m.Value) }
   return @($seen)
+}
+
+function Extract-CssUrlPaths([string]$Css, [string]$CssPath) {
+  $found = New-Object System.Collections.Generic.List[string]
+  if ([string]::IsNullOrEmpty($Css) -or [string]::IsNullOrEmpty($CssPath)) { return @() }
+  $slash = $CssPath.LastIndexOf('/')
+  $cssDir = if ($slash -gt 0) { $CssPath.Substring(0, $slash) } else { '/' }
+  foreach ($m in [regex]::Matches($Css, 'url\(([^)]+)\)', 'IgnoreCase')) {
+    $raw = $m.Groups[1].Value.Trim().Trim('"').Trim("'")
+    if ($raw -match '^(data:|#)') { continue }
+    $raw = $raw.Split('?')[0].Split('#')[0]
+    $path = $raw
+    if ($raw -notmatch '^https?://' -and -not $raw.StartsWith('/')) {
+      try { $path = [uri]::new([uri]("https://local.invalid$cssDir/"), $raw).AbsolutePath } catch { continue }
+    } elseif ($raw -match '^https?://') {
+      try { $path = ([uri]$raw).AbsolutePath } catch { continue }
+    }
+    if ($path -match '^/wp-(content|includes)/' -and $path -match '\.(png|jpe?g|webp|gif|svg|avif|ico|css|js|mjs|woff2?|ttf|eot|otf)$') {
+      $found.Add($path)
+    }
+  }
+  return @($found)
 }
 
 function Put-FleetKv([string]$Key, [byte[]]$Bytes) {
@@ -135,6 +166,7 @@ function Put-FleetKv([string]$Key, [byte[]]$Bytes) {
 }
 
 function Put-FleetR2([string]$ObjectKey, [byte[]]$Bytes, [string]$ContentType, [string]$TmpDir) {
+  if ($ObjectKey -match '(?i)\.svg$') { $ContentType = 'image/svg+xml' }
   $tmp = Join-Path $TmpDir ('r2-' + [guid]::NewGuid().ToString('N'))
   [IO.File]::WriteAllBytes($tmp, $Bytes)
   try {
@@ -234,11 +266,15 @@ foreach ($site in $sites) {
     $row.Pages = $pageOk
     Write-Host "  KV html pages=$pageOk" -ForegroundColor Green
 
-    foreach ($extra in @('/robots.txt', '/sitemap.xml', '/page-sitemap.xml')) {
+    foreach ($extra in @('/robots.txt', '/sitemap.xml', '/sitemap_index.xml', '/page-sitemap.xml', '/main-sitemap.xsl', '/wp-includes/js/jquery/jquery.min.js', '/wp-includes/js/jquery/jquery-migrate.min.js')) {
       [void]$allAssets.Add($extra)
     }
     $okA = 0; $failA = 0
-    foreach ($ap in @($allAssets | Sort-Object)) {
+    $queue = New-Object System.Collections.Generic.Queue[string]
+    $queued = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+    foreach ($ap0 in @($allAssets)) { if ($queued.Add($ap0)) { $queue.Enqueue($ap0) } }
+    while ($queue.Count -gt 0) {
+      $ap = $queue.Dequeue()
       $dl = Join-Path $siteDir ('dl-' + [guid]::NewGuid().ToString('N'))
       try {
         Get-CurlOrigin $domain $ap $dl 50
@@ -249,6 +285,11 @@ foreach ($site in $sites) {
         if (-not $isSeo -and ($head -match '<!doctype\s+html' -or $head -match '<html')) { throw 'html-not-asset' }
         Put-FleetR2 "${domain}:asset:${ap}" $b (Get-ContentType $ap) $siteDir
         $okA++
+        if ($ap -match '(?i)\.css$') {
+          foreach ($extraCss in (Extract-CssUrlPaths ([Text.Encoding]::UTF8.GetString($b)) $ap)) {
+            if ($queued.Add($extraCss)) { $queue.Enqueue($extraCss) }
+          }
+        }
       } catch {
         $failA++
         Write-Host "  asset fail $ap : $($_.Exception.Message)" -ForegroundColor DarkYellow

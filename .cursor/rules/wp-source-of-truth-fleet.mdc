@@ -31,3 +31,4 @@ Do **not** use `static-conversion\scripts\Invoke-DeepAssetSync.ps1` on fleet sit
 - Stay-WordPress excludes: never convert or fleet-migrate
 - Do not delete old per-site Workers until the fleet snapshot is verified and stable
 - After refresh, confirm no stale KV content is still being served
+- After every scrape/promote, SVGs must be `image/svg+xml` (never `application/xml`). Adam API and origin-fill have stored rating badges as XML, which shows as broken `<img>` placeholders. The fleet Worker forces SVG content-type; scrape scripts also re-PUT homepage SVGs.

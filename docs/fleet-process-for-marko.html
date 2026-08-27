@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fleet static process &mdash; for Marko</title>
+  <style>
+    :root {
+      --ink: #1a2332;
+      --muted: #5b6777;
+      --line: #d5dce6;
+      --paper: #f6f7f9;
+      --card: #ffffff;
+      --wp: #2271b1;
+      --stage: #0f766e;
+      --prod: #1d4ed8;
+      --warn: #b45309;
+      --ok: #15803d;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", Calibri, system-ui, sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+      line-height: 1.45;
+    }
+    .page { max-width: 1160px; margin: 0 auto; padding: 32px 28px 64px; }
+    header { border-bottom: 1px solid var(--line); padding-bottom: 20px; margin-bottom: 28px; }
+    .kicker {
+      font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--muted); font-weight: 600; margin: 0 0 8px;
+    }
+    h1 { font-size: 28px; font-weight: 650; letter-spacing: -0.02em; margin: 0 0 8px; }
+    .lede { margin: 0; color: var(--muted); max-width: 78ch; }
+    h2 { font-size: 16px; margin: 36px 0 12px; }
+    h3 { font-size: 14px; margin: 0 0 8px; }
+    p { margin: 0 0 10px; }
+    .diagram {
+      background: var(--card); border: 1px solid var(--line);
+      padding: 8px; overflow-x: auto;
+    }
+    .diagram svg { display: block; width: 100%; height: auto; min-width: 920px; }
+    .caption { font-size: 12px; color: var(--muted); margin: 8px 2px 0; }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .card, .note {
+      background: var(--card); border: 1px solid var(--line); padding: 16px 18px;
+    }
+    .card.ok { border-left: 4px solid var(--ok); }
+    .card.warn { border-left: 4px solid var(--warn); }
+    .card ul, .note ul { margin: 8px 0 0; padding-left: 18px; }
+    .card li, .note li { font-size: 13px; margin: 4px 0; color: var(--muted); }
+    table {
+      width: 100%; border-collapse: collapse; background: var(--card); font-size: 13px;
+    }
+    th, td {
+      text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top;
+    }
+    th {
+      font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--muted); font-weight: 650; background: #eef1f5;
+    }
+    code {
+      font-family: Consolas, "Cascadia Mono", monospace; font-size: 12.5px;
+    }
+    .do { color: var(--ok); font-weight: 650; }
+    .dont { color: #b42318; font-weight: 650; }
+    footer { margin-top: 28px; font-size: 12px; color: var(--muted); }
+    @media (max-width: 800px) { .two { grid-template-columns: 1fr; } }
+    @media print {
+      body { background: #fff; }
+      .page { padding: 12px; max-width: none; }
+      .diagram, .card, .note { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <p class="kicker">DevSecSi &middot; Mike / John &middot; updated 26 Aug 2026</p>
+      <h1>How fleet static works (and what the API should do)</h1>
+      <p class="lede">
+        One shared KV + R2. Two Workers only because Cloudflare caps a Worker at
+        1,000 routed zones. Adam&rsquo;s <code>fleet: true</code> call scrapes WordPress
+        into that shared store and attaches <strong>preview only</strong>
+        (<code>static.domain.com</code>). Live <code>domain.com</code> / <code>www</code>
+        is a later step on our side after QA.
+      </p>
+    </header>
+
+    <h2>1. Shared storage, two Workers</h2>
+    <div class="diagram">
+      <svg viewBox="0 0 1100 430" role="img" aria-labelledby="archTitle archDesc">
+        <title id="archTitle">Fleet architecture</title>
+        <desc id="archDesc">WordPress origin is scraped into shared KV and R2. Server 2 and server 1 both read that store. Routes decide which Worker serves which zone.</desc>
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#1a2332" />
+          </marker>
+        </defs>
+
+        <rect x="24" y="24" width="220" height="92" fill="#fff" stroke="#2271b1" stroke-width="1.75" />
+        <text x="134" y="54" text-anchor="middle" font-size="11" fill="#2271b1" font-weight="700">SOURCE OF TRUTH</text>
+        <text x="134" y="78" text-anchor="middle" font-size="14" font-weight="650" fill="#1a2332">Live WordPress</text>
+        <text x="134" y="98" text-anchor="middle" font-size="12" fill="#5b6777">hosting IP 174.136.29.214</text>
+
+        <rect x="310" y="24" width="240" height="92" fill="#fff" stroke="#b45309" stroke-width="1.75" />
+        <text x="430" y="54" text-anchor="middle" font-size="11" fill="#b45309" font-weight="700">ADAM API</text>
+        <text x="430" y="78" text-anchor="middle" font-size="14" font-weight="650" fill="#1a2332">provision-originless</text>
+        <text x="430" y="98" text-anchor="middle" font-size="12" fill="#5b6777">fleet: true &middot; scrapeNow</text>
+
+        <line x1="244" y1="70" x2="310" y2="70" stroke="#1a2332" stroke-width="1.5" marker-end="url(#arrow)" />
+        <line x1="550" y1="70" x2="616" y2="70" stroke="#1a2332" stroke-width="1.5" marker-end="url(#arrow)" />
+
+        <rect x="616" y="16" width="460" height="108" fill="#fff" stroke="#d5dce6" />
+        <text x="846" y="40" text-anchor="middle" font-size="11" fill="#5b6777" font-weight="700">SHARED STORE (one copy of content)</text>
+        <rect x="640" y="54" width="196" height="54" fill="#eef1f5" stroke="#d5dce6" />
+        <text x="738" y="76" text-anchor="middle" font-size="13" font-weight="650">HTML_FLEET</text>
+        <text x="738" y="94" text-anchor="middle" font-size="11" fill="#5b6777">KV &middot; {host}:html:{path}</text>
+        <rect x="856" y="54" width="196" height="54" fill="#eef1f5" stroke="#d5dce6" />
+        <text x="954" y="76" text-anchor="middle" font-size="13" font-weight="650">fleet-static-assets</text>
+        <text x="954" y="94" text-anchor="middle" font-size="11" fill="#5b6777">R2 &middot; {host}:asset:{path}</text>
+
+        <line x1="738" y1="124" x2="738" y2="176" stroke="#1a2332" stroke-width="1.5" marker-end="url(#arrow)" />
+        <line x1="954" y1="124" x2="954" y2="176" stroke="#1a2332" stroke-width="1.5" marker-end="url(#arrow)" />
+        <line x1="738" y1="176" x2="280" y2="176" stroke="#1a2332" stroke-width="1.5" />
+        <line x1="280" y1="176" x2="280" y2="210" stroke="#1a2332" stroke-width="1.5" marker-end="url(#arrow)" />
+        <line x1="954" y1="176" x2="820" y2="176" stroke="#1a2332" stroke-width="1.5" />
+        <line x1="820" y1="176" x2="820" y2="210" stroke="#1a2332" stroke-width="1.5" marker-end="url(#arrow)" />
+
+        <rect x="40" y="210" width="480" height="120" fill="#fff" stroke="#1d4ed8" stroke-width="1.75" />
+        <text x="280" y="238" text-anchor="middle" font-size="11" fill="#1d4ed8" font-weight="700">SERVER 2 &mdash; BATCHES 1&ndash;7</text>
+        <text x="280" y="264" text-anchor="middle" font-size="15" font-weight="650">fleet-static-worker</text>
+        <text x="280" y="288" text-anchor="middle" font-size="12" fill="#5b6777">Existing live fleet (~600 zones today)</text>
+        <text x="280" y="308" text-anchor="middle" font-size="12" fill="#5b6777">Default if workerName is omitted</text>
+
+        <rect x="580" y="210" width="480" height="120" fill="#fff" stroke="#0f766e" stroke-width="1.75" />
+        <text x="820" y="238" text-anchor="middle" font-size="11" fill="#0f766e" font-weight="700">SERVER 1 &mdash; NEW BATCHES</text>
+        <text x="820" y="264" text-anchor="middle" font-size="15" font-weight="650">fleet-static-worker-server-1</text>
+        <text x="820" y="288" text-anchor="middle" font-size="12" fill="#5b6777">Same KV/R2. Zero routes today.</text>
+        <text x="820" y="308" text-anchor="middle" font-size="12" fill="#5b6777">Needed because 1,700 sites &gt; 1,000 zone cap</text>
+
+        <text x="280" y="360" text-anchor="middle" font-size="12" fill="#5b6777">Routes: example.com/* &middot; www &middot; static.*</text>
+        <text x="820" y="360" text-anchor="middle" font-size="12" fill="#5b6777">Will get routes when new sites start</text>
+
+        <text x="550" y="408" text-anchor="middle" font-size="12" fill="#1a2332">The Worker looks up by Host header. Content is not copied between Workers.</text>
+      </svg>
+      <p class="caption">Both Workers are the same script. Splitting is only for Cloudflare&rsquo;s 1,000 routed-zones-per-Worker limit.</p>
+    </div>
+
+    <h2>2. Hosts and keys (this is why apex is not on the API call)</h2>
+    <div class="diagram">
+      <svg viewBox="0 0 1100 280" role="img" aria-labelledby="keyTitle keyDesc">
+        <title id="keyTitle">Preview vs production keys</title>
+        <desc id="keyDesc">static.domain.com stores keys under the static host. Live domain.com stores a separate apex key. Switching the route without copying keys would miss content.</desc>
+        <defs>
+          <marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#1a2332" />
+          </marker>
+        </defs>
+
+        <rect x="40" y="36" width="300" height="88" fill="#fff" stroke="#0f766e" stroke-width="1.75" />
+        <text x="190" y="64" text-anchor="middle" font-size="11" fill="#0f766e" font-weight="700">PREVIEW (API does this)</text>
+        <text x="190" y="88" text-anchor="middle" font-size="14" font-weight="650">static.example.com</text>
+        <text x="190" y="108" text-anchor="middle" font-size="12" fill="#5b6777">WordPress stays live on apex</text>
+
+        <rect x="400" y="36" width="300" height="88" fill="#eef1f5" stroke="#d5dce6" />
+        <text x="550" y="64" text-anchor="middle" font-size="11" fill="#5b6777" font-weight="700">KV / R2 KEYS</text>
+        <text x="550" y="88" text-anchor="middle" font-size="13" font-weight="650">static.example.com:html:/</text>
+        <text x="550" y="108" text-anchor="middle" font-size="12" fill="#5b6777">static.example.com:asset:...</text>
+
+        <rect x="760" y="36" width="300" height="88" fill="#fff" stroke="#1d4ed8" stroke-width="1.75" />
+        <text x="910" y="64" text-anchor="middle" font-size="11" fill="#1d4ed8" font-weight="700">LIVE (Mike team, after QA)</text>
+        <text x="910" y="88" text-anchor="middle" font-size="14" font-weight="650">example.com + www</text>
+        <text x="910" y="108" text-anchor="middle" font-size="12" fill="#5b6777">separate apex keys</text>
+
+        <line x1="340" y1="80" x2="400" y2="80" stroke="#1a2332" stroke-width="1.5" marker-end="url(#arrow2)" />
+
+        <text x="550" y="168" text-anchor="middle" font-size="13" fill="#b45309" font-weight="650">Do not attach example.com/* on the same provision call</text>
+        <text x="550" y="192" text-anchor="middle" font-size="13" fill="#5b6777">Host header would look up example.com:html:... which is empty until we scrape/copy apex keys.</text>
+        <text x="550" y="216" text-anchor="middle" font-size="13" fill="#5b6777">Preview first &rarr; QA on static.* &rarr; then we switch apex ourselves.</text>
+        <text x="550" y="252" text-anchor="middle" font-size="12" fill="#5b6777">Optional later: a separate promoteApex flag. Never the default of provision-originless.</text>
+      </svg>
+      <p class="caption">We already tested 10 batch 1&ndash;7 sites this way. static.* was 200 / KV. Live apex was not switched.</p>
+    </div>
+
+    <h2>3. Process (two steps, two owners)</h2>
+    <div class="diagram">
+      <svg viewBox="0 0 1100 220" role="img" aria-labelledby="flowTitle flowDesc">
+        <title id="flowTitle">Provision then cutover</title>
+        <desc id="flowDesc">Adam API scrapes to static preview. Mike team QAs. Then Mike team attaches apex routes after confirm.</desc>
+        <defs>
+          <marker id="arrow3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#1a2332" />
+          </marker>
+        </defs>
+
+        <rect x="30" y="40" width="240" height="100" fill="#fff" stroke="#b45309" stroke-width="1.75" />
+        <text x="150" y="70" text-anchor="middle" font-size="11" fill="#b45309" font-weight="700">STEP A &mdash; ADAM</text>
+        <text x="150" y="94" text-anchor="middle" font-size="13" font-weight="650">POST provision-originless</text>
+        <text x="150" y="116" text-anchor="middle" font-size="12" fill="#5b6777">scrape WP + static.* route</text>
+
+        <rect x="320" y="40" width="220" height="100" fill="#fff" stroke="#0f766e" stroke-width="1.75" />
+        <text x="430" y="70" text-anchor="middle" font-size="11" fill="#0f766e" font-weight="700">STEP B &mdash; QA</text>
+        <text x="430" y="94" text-anchor="middle" font-size="13" font-weight="650">Audit static.domain.com</text>
+        <text x="430" y="116" text-anchor="middle" font-size="12" fill="#5b6777">vs live WordPress</text>
+
+        <rect x="590" y="40" width="240" height="100" fill="#fff" stroke="#1d4ed8" stroke-width="1.75" />
+        <text x="710" y="70" text-anchor="middle" font-size="11" fill="#1d4ed8" font-weight="700">STEP C &mdash; MIKE TEAM</text>
+        <text x="710" y="94" text-anchor="middle" font-size="13" font-weight="650">Apex cutover after confirm</text>
+        <text x="710" y="116" text-anchor="middle" font-size="12" fill="#5b6777">domain.com + www routes</text>
+
+        <rect x="880" y="40" width="190" height="100" fill="#fff" stroke="#15803d" stroke-width="1.75" />
+        <text x="975" y="70" text-anchor="middle" font-size="11" fill="#15803d" font-weight="700">DONE</text>
+        <text x="975" y="94" text-anchor="middle" font-size="13" font-weight="650">200 &middot; x-source: kv</text>
+        <text x="975" y="116" text-anchor="middle" font-size="12" fill="#5b6777">x-fleet-host set</text>
+
+        <line x1="270" y1="90" x2="320" y2="90" stroke="#1a2332" stroke-width="1.5" marker-end="url(#arrow3)" />
+        <line x1="540" y1="90" x2="590" y2="90" stroke="#1a2332" stroke-width="1.5" marker-end="url(#arrow3)" />
+        <line x1="830" y1="90" x2="880" y2="90" stroke="#1a2332" stroke-width="1.5" marker-end="url(#arrow3)" />
+
+        <text x="150" y="172" text-anchor="middle" font-size="12" fill="#5b6777">Do not add apex here</text>
+        <text x="710" y="172" text-anchor="middle" font-size="12" fill="#5b6777">We already have this script</text>
+      </svg>
+    </div>
+
+    <h2>4. Which Worker for which sites</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Sites</th>
+          <th>Worker (server)</th>
+          <th>Who attaches routes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Batches 1&ndash;7 (current fleet, including the 10-site API test)</td>
+          <td><code>fleet-static-worker</code> &nbsp; server 2</td>
+          <td>Today&rsquo;s API already does this (static.* only)</td>
+        </tr>
+        <tr>
+          <td>New batches (next couple of days, rest of ~1,700)</td>
+          <td><code>fleet-static-worker-server-1</code> &nbsp; server 1</td>
+          <td>Pass <code>workerName: fleet-static-worker-server-1</code> on the same endpoint (deployed 26 Aug).</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="two" style="margin-top:16px">
+      <div class="card ok">
+        <h3>What we confirmed (25 Aug)</h3>
+        <ul>
+          <li>10 existing batch 1&ndash;7 domains, ~9.5 minutes, all OK</li>
+          <li>Worker: <code>fleet-static-worker</code></li>
+          <li>Route: <code>static.{domain}/*</code> only</li>
+          <li>Preview 200 / KV; live apex unchanged</li>
+        </ul>
+      </div>
+      <div class="card ok">
+        <h3>Confirmed (26 Aug) &mdash; Adam</h3>
+        <ul>
+          <li>Optional <code>workerName</code> is live on <code>provision-originless</code> and <code>/scrape</code></li>
+          <li>Omit it for batches 1&ndash;7 &rarr; <code>fleet-static-worker</code></li>
+          <li>Pass <code>fleet-static-worker-server-1</code> for new sites</li>
+          <li>Still <code>static.{domain}/*</code> only. Still no apex/www</li>
+        </ul>
+      </div>
+    </div>
+
+    <h2>5. Do / don&rsquo;t for provision-originless</h2>
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th>Practice</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="do">Do</td>
+          <td>Scrape current WordPress into <code>HTML_FLEET</code> + <code>fleet-static-assets</code>.</td>
+        </tr>
+        <tr>
+          <td class="do">Do</td>
+          <td>Attach <code>static.domain.com/*</code> so we can QA before production.</td>
+        </tr>
+        <tr>
+          <td class="do">Do</td>
+          <td>Pass <code>workerName: fleet-static-worker-server-1</code> for new batches. Omit it for batches 1&ndash;7.</td>
+        </tr>
+        <tr>
+          <td class="dont">Don&rsquo;t</td>
+          <td>Create a new per-site Worker, KV, or R2 bucket.</td>
+        </tr>
+        <tr>
+          <td class="dont">Don&rsquo;t</td>
+          <td>Point live <code>domain.com</code> / <code>www</code> at the Worker in the same call.</td>
+        </tr>
+        <tr>
+          <td class="dont">Don&rsquo;t</td>
+          <td>Move batches 1&ndash;7 off <code>fleet-static-worker</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <footer>
+      Mike / John. Server 2 = current fleet. Server 1 = overflow Worker for the rest of the portfolio.
+      WordPress on the hosting IP is always the scrape source.
+    </footer>
+  </div>
+</body>
+</html>

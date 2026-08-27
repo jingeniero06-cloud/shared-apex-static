@@ -6,13 +6,27 @@ const ASSET_EXTENSIONS = new Set([
   ".css", ".js", ".mjs",
   ".png", ".jpg", ".jpeg", ".gif", ".webp", ".avif", ".svg", ".ico",
   ".woff", ".woff2", ".ttf", ".otf", ".eot",
-  ".pdf", ".txt", ".xml",
+  ".pdf", ".txt", ".xml", ".xsl",
   ".mp4", ".webm", ".mov", ".mp3", ".wav",
 ]);
 
 function apexHost(hostname) {
   const h = (hostname || "").toLowerCase();
   return h.startsWith("www.") ? h.slice(4) : h;
+}
+
+/** static.{apex} preview must origin-fill from the real WordPress vhost, not static.*. */
+function originFillHost(hostname) {
+  const h = apexHost(hostname);
+  return h.startsWith("static.") ? h.slice(7) : h;
+}
+
+function corsHeadersFor(pathname) {
+  const lower = (pathname || "").toLowerCase();
+  if (/\.(woff2?|ttf|otf|eot)$/.test(lower)) {
+    return { "access-control-allow-origin": "*" };
+  }
+  return {};
 }
 
 function normalizePath(pathname) {
@@ -51,7 +65,7 @@ function guessContentType(pathname) {
   if (lower.endsWith(".eot")) return "application/vnd.ms-fontobject";
   if (lower.endsWith(".pdf")) return "application/pdf";
   if (lower.endsWith(".txt")) return "text/plain; charset=utf-8";
-  if (lower.endsWith(".xml")) return "application/xml; charset=utf-8";
+  if (lower.endsWith(".xml") || lower.endsWith(".xsl")) return "application/xml; charset=utf-8";
   if (lower.endsWith(".mp4")) return "video/mp4";
   if (lower.endsWith(".webm")) return "video/webm";
   if (lower.endsWith(".mov")) return "video/quicktime";
@@ -60,8 +74,52 @@ function guessContentType(pathname) {
   return "application/octet-stream";
 }
 
+function isSeoXmlQuery(url) {
+  return url.searchParams.has("xsl") || url.searchParams.has("sitemap");
+}
+
+function assetPathFromUrl(url) {
+  if (url.searchParams.has("xsl")) {
+    return `/?xsl=${url.searchParams.get("xsl") || ""}`;
+  }
+  if (url.searchParams.has("sitemap")) {
+    const sitemap = url.searchParams.get("sitemap") || "";
+    const n = url.searchParams.get("sitemap_n");
+    return n != null && n !== ""
+      ? `/?sitemap=${sitemap}&sitemap_n=${n}`
+      : `/?sitemap=${sitemap}`;
+  }
+  return normalizePath(url.pathname);
+}
+
+function isXmlLikePath(pathname) {
+  const lower = (pathname || "").toLowerCase();
+  return (
+    lower.endsWith(".xml") ||
+    lower.endsWith(".xsl") ||
+    lower.includes("?xsl=") ||
+    lower.includes("?sitemap=")
+  );
+}
+
+function isSvgPath(pathname) {
+  return (pathname || "").toLowerCase().endsWith(".svg");
+}
+
+/**
+ * R2 / origin often label SVGs as application/xml (Adam API, or a naive
+ * "content-type includes xml" check on image/svg+xml). Browsers will not
+ * paint <img src="*.svg"> unless Content-Type is image/svg+xml.
+ */
+function responseContentType(pathname, storedCt) {
+  if (isSvgPath(pathname)) return "image/svg+xml";
+  if (isXmlLikePath(pathname)) return "application/xml; charset=utf-8";
+  return storedCt || guessContentType(pathname);
+}
+
 function isRewritableTextAsset(pathname, contentType) {
-  const lowerPath = pathname.toLowerCase();
+  const lowerPath = (pathname || "").toLowerCase();
+  if (isSvgPath(lowerPath)) return false;
   const lowerContentType = (contentType || guessContentType(pathname)).toLowerCase();
   return (
     lowerPath.endsWith(".css") ||
@@ -69,9 +127,11 @@ function isRewritableTextAsset(pathname, contentType) {
     lowerPath.endsWith(".mjs") ||
     lowerPath.endsWith(".json") ||
     lowerPath.endsWith(".txt") ||
+    isXmlLikePath(lowerPath) ||
     lowerContentType.startsWith("text/") ||
     lowerContentType.includes("javascript") ||
-    lowerContentType.includes("json")
+    lowerContentType.includes("json") ||
+    (lowerContentType.includes("xml") && !lowerContentType.includes("svg"))
   );
 }
 
@@ -96,7 +156,7 @@ function rewriteUrls(html, originHost, cloudflareDomain, originProtocol) {
     html = html.split(slashEscapedCandidateOriginBase).join(slashEscapedCloudflareBase);
   }
   html = html.replace(
-    new RegExp(`//${escapedOriginHost}(?=/|"|'|\\s|>)`, "gi"),
+    new RegExp(`//${escapedOriginHost}(?=/|"|'|\\s|>|\\?|$)`, "gi"),
     `//${cloudflareDomain}`
   );
   html = html
@@ -123,11 +183,17 @@ export default {
     const url = new URL(request.url);
     const host = apexHost(url.hostname);
     const cloudflareDomain = host;
-    const originHost = host;
+    const fillHost = originFillHost(url.hostname);
+    const originHost = fillHost;
     const originProtocol = env.ORIGIN_PROTOCOL || "https";
-    const normalizedPath = normalizePath(url.pathname);
-    const isAsset = hasAssetExtension(normalizedPath);
+    const seoXml = isSeoXmlQuery(url);
+    const normalizedPath = seoXml ? assetPathFromUrl(url) : normalizePath(url.pathname);
+    const xmlLike = isXmlLikePath(normalizedPath);
+    const isAsset = hasAssetExtension(normalizedPath) || seoXml;
     const { htmlKey, assetKey } = siteKeys(host, normalizedPath);
+    const assetCache = xmlLike
+      ? "public, max-age=300"
+      : "public, max-age=31536000, immutable";
     const refreshHeader =
       request.headers.get("x-force-refresh") || request.headers.get("X-Force-Refresh");
     const forceRefresh =
@@ -138,10 +204,9 @@ export default {
         if (isAsset) {
           const obj = await env.ASSETS_BUCKET.get(assetKey);
           if (obj) {
-            const ct =
-              (obj.httpMetadata && obj.httpMetadata.contentType) ||
-              guessContentType(normalizedPath);
-            if (isRewritableTextAsset(normalizedPath, ct)) {
+            const storedCt = obj.httpMetadata && obj.httpMetadata.contentType;
+            const ct = responseContentType(normalizedPath, storedCt);
+            if (isRewritableTextAsset(normalizedPath, storedCt || ct)) {
               const assetText = await obj.text();
               const rewritten = rewriteUrls(
                 assetText,
@@ -153,9 +218,10 @@ export default {
                 status: 200,
                 headers: {
                   "content-type": ct,
-                  "cache-control": "public, max-age=31536000, immutable",
+                  "cache-control": assetCache,
                   "x-source": "r2",
                   "x-fleet-host": host,
+                  ...corsHeadersFor(normalizedPath),
                 },
               });
             }
@@ -163,9 +229,10 @@ export default {
               status: 200,
               headers: {
                 "content-type": ct,
-                "cache-control": "public, max-age=31536000, immutable",
+                "cache-control": assetCache,
                 "x-source": "r2",
                 "x-fleet-host": host,
+                ...corsHeadersFor(normalizedPath),
               },
             });
           }
@@ -205,11 +272,11 @@ export default {
 
       let originResp;
       try {
-        originResp = await fetchOrigin(`${originProtocol}://${host}${originPath}`);
+        originResp = await fetchOrigin(`${originProtocol}://${fillHost}${originPath}`);
       } catch (_err1) {
         try {
           originResp = await fetchOrigin(`${originProtocol}://${hostingIp}${originPath}`, {
-            Host: host,
+            Host: fillHost,
           });
         } catch (_err2) {
           originResp = null;
@@ -221,14 +288,15 @@ export default {
           if (isAsset) {
             const staleObj = await env.ASSETS_BUCKET.get(assetKey);
             if (staleObj) {
-              const ct =
-                (staleObj.httpMetadata && staleObj.httpMetadata.contentType) ||
-                guessContentType(normalizedPath);
+              const ct = responseContentType(
+                normalizedPath,
+                staleObj.httpMetadata && staleObj.httpMetadata.contentType
+              );
               return new Response(staleObj.body, {
                 status: 200,
                 headers: {
                   "content-type": ct,
-                  "cache-control": "public, max-age=31536000, immutable",
+                  "cache-control": assetCache,
                   "x-source": "r2-stale",
                   "x-fleet-host": host,
                 },
@@ -260,8 +328,14 @@ export default {
       }
 
       const originContentType = originResp.headers.get("content-type") || "";
+      const originIsXml =
+        !isSvgPath(normalizedPath) &&
+        (xmlLike ||
+          (originContentType.includes("xml") &&
+            !originContentType.includes("html") &&
+            !originContentType.includes("svg")));
 
-      if (originContentType.includes("text/html") || !isAsset) {
+      if (!isAsset && !originIsXml) {
         let htmlBody = await originResp.text();
         htmlBody = rewriteUrls(htmlBody, originHost, cloudflareDomain, originProtocol);
         ctx.waitUntil(env.HTML_KV.put(htmlKey, htmlBody));
@@ -277,7 +351,10 @@ export default {
       }
 
       const buffer = await originResp.arrayBuffer();
-      const ct = originContentType || guessContentType(normalizedPath);
+      const ct = responseContentType(
+        normalizedPath,
+        originIsXml ? "application/xml; charset=utf-8" : originContentType
+      );
       let responseBody = buffer;
       let bodyToStore = buffer;
       if (isRewritableTextAsset(normalizedPath, ct)) {
@@ -295,9 +372,10 @@ export default {
         status: 200,
         headers: {
           "content-type": ct,
-          "cache-control": "public, max-age=31536000, immutable",
+          "cache-control": originIsXml ? "public, max-age=300" : assetCache,
           "x-source": "origin-asset",
           "x-fleet-host": host,
+          ...corsHeadersFor(normalizedPath),
         },
       });
     } catch (err) {
