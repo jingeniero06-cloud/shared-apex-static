@@ -8,6 +8,9 @@
 **New teammate?** Start with the combined handoff package:  
 `..\static-fleet-handoff\README.md` (also see [`HANDOFF.md`](./HANDOFF.md)).
 
+**New machine setup** (copy kit, `fleet\` links, `.env`, smoke tests):  
+[`docs/SOP-MACHINE-SETUP.md`](./docs/SOP-MACHINE-SETUP.md) · [HTML](./docs/SOP-MACHINE-SETUP.html) · [PDF](./docs/SOP-MACHINE-SETUP.pdf)
+
 **Operating SOP** (static.* preview, apex cutover, origin-IP rescrape):  
 [`docs/SOP-CONVERT-PREVIEW-CUTOVER-RESCRAPE.md`](./docs/SOP-CONVERT-PREVIEW-CUTOVER-RESCRAPE.md) · [HTML](./docs/SOP-CONVERT-PREVIEW-CUTOVER-RESCRAPE.html) · [PDF](./docs/SOP-CONVERT-PREVIEW-CUTOVER-RESCRAPE.pdf)  
 Same files in `..\static-fleet-handoff\` and `..\html-docs-for-sharing\`.

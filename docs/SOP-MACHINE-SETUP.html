@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CityThrive SOP — Set up fleet conversion on your PC</title>
+  <style>
+    :root {
+      --navy: #0f3460;
+      --navy-2: #1a4a7a;
+      --ink: #1c2430;
+      --muted: #5c6773;
+      --line: #d5dde6;
+      --paper: #ffffff;
+      --wash: #f4f7fa;
+      --gold: #b8860b;
+      --ok: #1b7a4a;
+      --warn-bg: #fff8e8;
+      --warn-bd: #e6d19a;
+      --no-bg: #fdeeee;
+      --no-bd: #e3b6b6;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--wash); color: var(--ink); }
+    body { font: 11pt/1.45 "Calibri", "Segoe UI", system-ui, sans-serif; }
+    .page {
+      max-width: 210mm;
+      margin: 24px auto 48px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      padding: 18mm 16mm 16mm;
+    }
+    .cover-bar { height: 6px; background: var(--navy); margin: -18mm -16mm 14mm; }
+    .kicker {
+      font-size: 10pt; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--gold); font-weight: 700; margin: 0 0 6px;
+    }
+    h1 { font-size: 22pt; line-height: 1.2; color: var(--navy); margin: 0 0 8px; font-weight: 700; }
+    .subtitle { font-size: 12pt; color: var(--muted); margin: 0 0 18px; }
+    .doc-meta { width: 100%; border-collapse: collapse; font-size: 10pt; margin: 0 0 18px; }
+    .doc-meta th, .doc-meta td {
+      border: 1px solid var(--line); padding: 6px 10px; text-align: left; vertical-align: top;
+    }
+    .doc-meta th { width: 28%; background: var(--navy); color: #fff; font-weight: 600; }
+    h2 {
+      font-size: 13.5pt; color: var(--navy); border-bottom: 2px solid var(--navy);
+      padding-bottom: 4px; margin: 22px 0 10px; page-break-after: avoid;
+    }
+    h3 { font-size: 11.5pt; color: var(--navy-2); margin: 16px 0 6px; page-break-after: avoid; }
+    p { margin: 0 0 8px; }
+    ol, ul { margin: 0 0 10px; padding-left: 22px; }
+    li { margin: 0 0 4px; }
+    table.data { width: 100%; border-collapse: collapse; font-size: 10pt; margin: 8px 0 14px; }
+    table.data th, table.data td {
+      border: 1px solid var(--line); padding: 6px 8px; vertical-align: top; text-align: left;
+    }
+    table.data th { background: var(--navy); color: #fff; font-weight: 600; }
+    table.data tr:nth-child(even) td { background: #f7fafc; }
+    code { font-family: Consolas, "Courier New", monospace; font-size: 8.5pt; }
+    pre {
+      background: #0f2138; color: #e8eef5; padding: 10px 12px;
+      font: 8pt/1.4 Consolas, "Courier New", monospace;
+      white-space: pre-wrap; word-break: break-word; margin: 8px 0 12px;
+      border-left: 3px solid var(--gold);
+    }
+    .callout {
+      border: 1px solid var(--line); padding: 10px 12px; margin: 10px 0 14px;
+      background: var(--wash); page-break-inside: avoid;
+    }
+    .callout.warn { background: var(--warn-bg); border-color: var(--warn-bd); }
+    .callout.no { background: var(--no-bg); border-color: var(--no-bd); }
+    .callout b { display: block; margin-bottom: 4px; color: var(--navy); }
+    .toc a { color: var(--navy); text-decoration: none; }
+    .toc td { padding: 3px 0; }
+    .toc .num { width: 28px; color: var(--muted); }
+    .footer-note {
+      margin-top: 28px; padding-top: 10px; border-top: 1px solid var(--line);
+      font-size: 9pt; color: var(--muted);
+    }
+    .check li { list-style: none; margin-left: -8px; }
+    .check li::before { content: "☐  "; color: var(--navy); }
+    @media print {
+      body { background: #fff; }
+      .page { max-width: none; margin: 0; border: 0; padding: 0; }
+      .cover-bar { margin: 0 0 12mm; }
+      pre, table, .callout { page-break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+    @page {
+      size: A4;
+      margin: 16mm 16mm 18mm 16mm;
+      @bottom-left { content: "CT-SOP-FLEET-MACHINE-SETUP-2026-09  ·  v1.0"; font-size: 8pt; color: #667; }
+      @bottom-right { content: "Page " counter(page); font-size: 8pt; color: #667; }
+    }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <div class="cover-bar"></div>
+    <p class="kicker">CityThrive  ·  Fleet static operations</p>
+    <h1>Standard Operating Procedure</h1>
+    <p class="subtitle">Set up fleet conversion on your own Windows PC</p>
+
+    <table class="doc-meta">
+      <tr><th>Document ID</th><td>CT-SOP-FLEET-MACHINE-SETUP-2026-09</td></tr>
+      <tr><th>Version / effective</th><td>1.0  ·  2 September 2026</td></tr>
+      <tr><th>Owners</th><td>John (conversion / Cloudflare)</td></tr>
+      <tr><th>Audience</th><td>Anyone who will run preview, cutover, rescrape, or 26-check on their own PC</td></tr>
+      <tr><th>Companion files</th><td>Markdown + this HTML + PDF. After setup: <code>SOP-CONVERT-PREVIEW-CUTOVER-RESCRAPE.pdf</code></td></tr>
+    </table>
+
+    <div class="callout warn">
+      <b>This SOP does not convert a site</b>
+      It only gets the kit onto a new machine. When the checklist at the end is all ticked, open
+      <code>SOP-CONVERT-PREVIEW-CUTOVER-RESCRAPE.pdf</code> in this same <code>fleet</code> folder and follow Path A / B / C.
+      GitHub is not required. Never put <code>.env</code> in git, zip, Slack, or chat.
+    </div>
+
+    <h2>Contents</h2>
+    <table class="toc" style="width:100%;border-collapse:collapse;font-size:10.5pt;margin-bottom:8px;">
+      <tr><td class="num">1.</td><td><a href="#s1">Purpose</a></td></tr>
+      <tr><td class="num">2.</td><td><a href="#s2">What lives where</a></td></tr>
+      <tr><td class="num">3.</td><td><a href="#s3">Prerequisites</a></td></tr>
+      <tr><td class="num">4.</td><td><a href="#s4">Copy the kit</a></td></tr>
+      <tr><td class="num">5.</td><td><a href="#s5">Recreate the fleet links</a></td></tr>
+      <tr><td class="num">6.</td><td><a href="#s6">Create .env in each project</a></td></tr>
+      <tr><td class="num">7.</td><td><a href="#s7">Constants</a></td></tr>
+      <tr><td class="num">8.</td><td><a href="#s8">Prove the machine works</a></td></tr>
+      <tr><td class="num">9.</td><td><a href="#s9">How you run jobs after setup</a></td></tr>
+      <tr><td class="num">10.</td><td><a href="#s10">Then read the operating SOP</a></td></tr>
+      <tr><td class="num">11.</td><td><a href="#s11">Do not</a></td></tr>
+      <tr><td class="num">12.</td><td><a href="#s12">Setup checklist</a></td></tr>
+    </table>
+
+    <h2 id="s1">1. Purpose</h2>
+    <p>A teammate on their own Windows PC can:</p>
+    <ol>
+      <li>Copy the four project folders plus the <code>fleet</code> hub.</li>
+      <li>Recreate folder links so <code>fleet\worker</code> (and the rest) open the real projects.</li>
+      <li>Create <code>.env</code> files (token from the vault only).</li>
+      <li>Prove APIs and tools work.</li>
+      <li>Run jobs from <code>C:\Users\&lt;You&gt;\Downloads\fleet</code>.</li>
+    </ol>
+
+    <h2 id="s2">2. What lives where</h2>
+    <p>Unzip so these sit <b>next to each other</b> under Downloads:</p>
+    <pre>C:\Users\&lt;You&gt;\Downloads\
+  fleet\                   Hub: SOPs, audits, CSVs, form JS. Run from here.
+  shared-apex-static\      Fleet Worker, KV/R2 scrape
+  fleet-static-preview\    static.* preview, DNS, apex cutover
+  static-conversion\       Per-site convert + 26-check audit
+  static-fleet-handoff\    Team SOP copies</pre>
+    <p>Inside <code>fleet\</code>, these names are <b>links</b> to the real folders (not copies of the code):</p>
+    <table class="data">
+      <tr><th>Link in fleet\</th><th>Real folder</th></tr>
+      <tr><td><code>worker\</code></td><td><code>..\shared-apex-static\</code></td></tr>
+      <tr><td><code>preview\</code></td><td><code>..\fleet-static-preview\</code></td></tr>
+      <tr><td><code>conversion\</code></td><td><code>..\static-conversion\</code></td></tr>
+      <tr><td><code>handoff\</code></td><td><code>..\static-fleet-handoff\</code></td></tr>
+    </table>
+    <p>If you skip the links, run the same scripts from the real folders. The convert SOP still works. Do <b>not</b> put a <code>.env</code> in <code>fleet\</code> — each project has its own.</p>
+
+    <h2 id="s3">3. Prerequisites</h2>
+    <table class="data">
+      <tr><th>Tool</th><th>Required?</th><th>Notes</th></tr>
+      <tr><td>Windows 10/11</td><td>Yes</td><td></td></tr>
+      <tr><td>PowerShell 5.1+</td><td>Yes</td><td>Built-in</td></tr>
+      <tr><td><code>curl.exe</code></td><td>Yes</td><td>Built-in on current Windows</td></tr>
+      <tr><td>Python 3.x</td><td>Yes</td><td>26-check / Form QA (<code>requests</code>, <code>openpyxl</code>)</td></tr>
+      <tr><td>Cloudflare API token</td><td>Yes</td><td>From the vault. Never Slack, email, or git</td></tr>
+      <tr><td>Git / GitHub</td><td>No</td><td>Zip or shared drive</td></tr>
+      <tr><td>Node / Wrangler</td><td>No</td><td>Operators use PowerShell + the API token</td></tr>
+    </table>
+    <pre>Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+python --version
+curl.exe --version</pre>
+    <p>If Python is missing, install 3.12+ from python.org and tick <b>Add python.exe to PATH</b>. Then:</p>
+    <pre>python -m pip install requests openpyxl urllib3</pre>
+
+    <h2 id="s4">4. Copy the kit</h2>
+    <p>Ask the lead for:</p>
+    <ol>
+      <li>The zip / shared-drive copy of the five folders (<b>no <code>.env</code> files</b>).</li>
+      <li>Vault item for <code>CLOUDFLARE_API_TOKEN</code> (and DevSecSi key only if you will run old per-site convert).</li>
+      <li>Confirmation that <code>shared-apex-static\reports\fleet-infra.json</code> is in the zip.</li>
+    </ol>
+    <p>Unzip under <code>C:\Users\&lt;You&gt;\Downloads\</code> so the folder names match this SOP. Do not nest <code>Downloads\fleet\fleet\</code>.</p>
+    <div class="callout">
+      <b>Broken links after unzip</b>
+      If <code>fleet\worker</code> (or preview / conversion / handoff) is an empty folder, the junction did not survive the copy. Delete those empty folders, then recreate the links in section 5.
+    </div>
+
+    <h2 id="s5">5. Recreate the fleet links</h2>
+    <p>Open PowerShell in <code>C:\Users\&lt;You&gt;\Downloads\fleet</code>. This does not need “Run as administrator”:</p>
+    <pre>cd "C:\Users\&lt;You&gt;\Downloads\fleet"
+
+foreach ($pair in @(
+  @{ Name = 'worker';      Target = '..\shared-apex-static' },
+  @{ Name = 'preview';     Target = '..\fleet-static-preview' },
+  @{ Name = 'conversion';  Target = '..\static-conversion' },
+  @{ Name = 'handoff';     Target = '..\static-fleet-handoff' }
+)) {
+  if (Test-Path -LiteralPath $pair.Name) { cmd /c "rmdir `"$($pair.Name)`"" }
+  New-Item -ItemType Junction -Path $pair.Name -Target (Resolve-Path $pair.Target) | Out-Null
+  Write-Output ("OK {0} -> {1}" -f $pair.Name, (Resolve-Path $pair.Target))
+}</pre>
+    <p>Check: <code>dir worker</code> should show <code>README.md</code> and <code>scripts\</code> from shared-apex-static, not an empty directory.</p>
+
+    <h2 id="s6">6. Create .env in each project</h2>
+    <h3>A) Fleet Worker — shared-apex-static (fleet\worker)</h3>
+    <pre>cd "C:\Users\&lt;You&gt;\Downloads\shared-apex-static"
+Copy-Item .env.example .env
+notepad .env</pre>
+    <p>Paste <b>only</b> <code>CLOUDFLARE_API_TOKEN</code> from the vault. Leave the rest as in <code>.env.example</code> (account id, both hosting IPs, Worker / KV / R2 names).</p>
+    <p>Token needs: Workers Scripts, KV, R2, Zone DNS (read), Zone Workers Routes, Zone Cache Purge, Zone WAF. Same Cloudflare account the live fleet already uses.</p>
+    <p>Fleet infra is <b>already live</b>. Do not re-provision unless <code>reports\fleet-infra.json</code> is missing:</p>
+    <pre>powershell -ExecutionPolicy Bypass -File .\scripts\Invoke-ProvisionFleet.ps1</pre>
+
+    <h3>B) Preview / cutover — fleet-static-preview (fleet\preview)</h3>
+    <pre>cd "C:\Users\&lt;You&gt;\Downloads\fleet-static-preview"
+Copy-Item .env.example .env</pre>
+    <p>Paste the <b>same</b> token. Account id, KV id, Worker name, and Server 2 hosting IP can match the worker <code>.env</code>. Add Server 1 origin if missing: <code>HOSTING_IP_S1=165.140.157.43</code>.</p>
+
+    <h3>C) 26-check / old convert — static-conversion (fleet\conversion)</h3>
+    <pre>cd "C:\Users\&lt;You&gt;\Downloads\static-conversion"
+Copy-Item .env.example .env
+notepad .env</pre>
+    <p>Same Cloudflare token. Fill DevSecSi URL/key from the vault <b>only</b> if you will call Adam’s provision API. Fleet preview / cutover / origin-IP rescrape do not need DevSecSi.</p>
+    <pre>.\Invoke-TestApis.ps1</pre>
+    <p>Expect all checks green. If this fails, stop and fix the token with the lead. Do not convert sites.</p>
+
+    <h2 id="s7">7. Constants</h2>
+    <table class="data">
+      <tr><th>Name</th><th>Value</th></tr>
+      <tr><td>Server 2 origin (Batches 1–7 live apex)</td><td><code>174.136.29.214</code> → Worker <code>fleet-static-worker</code></td></tr>
+      <tr><td>Server 1 origin (new batches)</td><td><code>165.140.157.43</code> → Worker <code>fleet-static-worker-server-1</code></td></tr>
+      <tr><td>Shared KV / R2</td><td><code>HTML_FLEET</code> / <code>fleet-static-assets</code></td></tr>
+      <tr><td>Form JS (fleet inject)</td><td><code>C:\Users\&lt;You&gt;\Downloads\fleet\assets\form-validation.js</code></td></tr>
+      <tr><td>Stay-WordPress (never convert)</td><td>roundrockfoundationrepairexperts.com, solidfoundationrepairofsavannah.com, solidfoundationrepairoflakeworth.com, azaleaparkfoundationrepair.com</td></tr>
+    </table>
+    <p>Do not move Batches 1–7 live apex onto <code>fleet-static-worker-server-1</code>.</p>
+
+    <h2 id="s8">8. Prove the machine works</h2>
+    <p>From <code>C:\Users\&lt;You&gt;\Downloads\fleet</code>:</p>
+    <pre>Test-Path .\worker\.env
+Test-Path .\preview\.env
+Test-Path .\conversion\.env
+Test-Path .\worker\reports\fleet-infra.json
+Test-Path .\assets\form-validation.js
+Test-Path .\SOP-CONVERT-PREVIEW-CUTOVER-RESCRAPE.pdf</pre>
+    <p>All should be <code>True</code>.</p>
+    <p>Cloudflare token (does not print the secret):</p>
+    <pre>cd "C:\Users\&lt;You&gt;\Downloads\shared-apex-static"
+$tok = (Get-Content .env | Where-Object { $_ -match '^CLOUDFLARE_API_TOKEN=' }) -replace '^CLOUDFLARE_API_TOKEN=',''
+$h = @{ Authorization = "Bearer $tok" }
+(Invoke-RestMethod -Uri "https://api.cloudflare.com/client/v4/accounts/f215f8ca79dd9d53b04618556593a581/workers/scripts/fleet-static-worker" -Headers $h).success</pre>
+    <p>Expect <code>True</code>. If it errors, the token is wrong or missing Workers Scripts Read.</p>
+
+    <h2 id="s9">9. How you run jobs after setup</h2>
+    <p>Always start in <code>C:\Users\&lt;You&gt;\Downloads\fleet</code> (or <code>worker</code> / <code>preview</code> / <code>conversion</code>). Put domain lists in <code>fleet\sites\</code> (column <code>Domain</code>). Copy finished spreadsheets into <code>fleet\audits\</code>.</p>
+    <pre>cd "C:\Users\&lt;You&gt;\Downloads\fleet\preview"
+powershell -ExecutionPolicy Bypass -File .\scripts\Invoke-PreviewStaticOnFleet.ps1 `
+  -SitesCsv .\sites\YOUR.csv -OriginIp 174.136.29.214 -WorkerName fleet-static-worker
+
+cd "C:\Users\&lt;You&gt;\Downloads\fleet\worker"
+powershell -ExecutionPolicy Bypass -File .\scripts\Invoke-WpOriginToFleet.ps1 `
+  -SitesCsv .\reports\YOUR.csv -HostingIp 174.136.29.214 -SkipRoutes -SkipAssets</pre>
+    <p>Full steps, origin-IP rules, and cutover flags are in the convert SOP — not here.</p>
+
+    <h2 id="s10">10. Then read the operating SOP</h2>
+    <p>Open <code>C:\Users\&lt;You&gt;\Downloads\fleet\SOP-CONVERT-PREVIEW-CUTOVER-RESCRAPE.pdf</code>.</p>
+    <p>That document is Path A (new convert → <code>static.*</code> → apex), Path B (rescrape via hosting IP), Path C (rollback to WordPress, edit, rescrape), form-validation inject, and Stay-WordPress.</p>
+    <div class="callout warn">
+      <b>First real job</b>
+      Do not convert or cut over apex until that SOP is clear. First site: one non-critical domain, <code>static.*</code> only. Apex cutover requires <code>-IConfirmApexCutover</code>.
+    </div>
+
+    <h2 id="s11">11. Do not</h2>
+    <table class="data">
+      <tr><th>Do not</th><th>Why</th></tr>
+      <tr><td>Commit or zip <code>.env</code></td><td>Token in git / shared drive</td></tr>
+      <tr><td>Paste the token into chat</td><td>Vault only</td></tr>
+      <tr><td>Re-provision fleet “to be safe”</td><td>Infra is already live; you can overwrite routes</td></tr>
+      <tr><td>Skip Stay-WordPress excludes</td><td>Never convert those four domains</td></tr>
+      <tr><td>Scrape public HTTPS on a live fleet site</td><td>Recopies stale KV</td></tr>
+      <tr><td>Use <code>Downloads\form-validation.js</code></td><td>Missing popup listeners; use <code>fleet\assets\form-validation.js</code></td></tr>
+      <tr><td>Omit <code>workerName</code> on a new-batch Adam scrape</td><td>Lands <code>static.*</code> on Server 2</td></tr>
+      <tr><td>Cut over apex without <code>-IConfirmApexCutover</code></td><td>Script will refuse; that is intentional</td></tr>
+    </table>
+
+    <h2 id="s12">12. Setup checklist</h2>
+    <ul class="check">
+      <li>Five folders under <code>Downloads\</code> with the names in section 2</li>
+      <li><code>fleet\worker</code>, <code>preview</code>, <code>conversion</code>, <code>handoff</code> point at the real projects</li>
+      <li><code>.env</code> in worker, preview, conversion — token from vault, not from chat</li>
+      <li><code>python --version</code> and <code>curl.exe --version</code> work</li>
+      <li><code>Invoke-TestApis.ps1</code> green if you will use conversion</li>
+      <li>Cloudflare Workers script probe returns <code>True</code></li>
+      <li><code>fleet-infra.json</code> and <code>fleet\assets\form-validation.js</code> exist</li>
+      <li>Convert SOP PDF opens from <code>fleet\</code></li>
+      <li>No <code>.env</code> in the zip you send the next person</li>
+    </ul>
+
+    <p class="footer-note">
+      Related: SOP-CONVERT-PREVIEW-CUTOVER-RESCRAPE.pdf (operating workflow) ·
+      static-fleet-handoff\02-pc-setup.md (short sibling) ·
+      shared-apex-static\README.md · fleet-static-preview\README.md
+    </p>
+  </article>
+</body>
+</html>

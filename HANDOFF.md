@@ -7,6 +7,9 @@
 This folder (`shared-apex-static`) is **Part B — shared fleet migrate only**.  
 WordPress → static conversion lives in `static-conversion` (Part A).
 
+**New machine setup:**  
+[`docs/SOP-MACHINE-SETUP.html`](./docs/SOP-MACHINE-SETUP.html) · [PDF](./docs/SOP-MACHINE-SETUP.pdf)
+
 **Operating SOP** (preview → apex cutover → origin-IP rescrape, including rollback-to-WP edit loop):  
 [`docs/SOP-CONVERT-PREVIEW-CUTOVER-RESCRAPE.html`](./docs/SOP-CONVERT-PREVIEW-CUTOVER-RESCRAPE.html)
 

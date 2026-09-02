@@ -11,6 +11,8 @@
 
 This is the **operating workflow** for fleet static. It replaces “straight to live apex” for new converts. WordPress on the hosting IP is always the source of truth.
 
+New machine first: [SOP-MACHINE-SETUP.pdf](./SOP-MACHINE-SETUP.pdf).
+
 ---
 
 ## 1. Purpose
@@ -207,6 +209,7 @@ Full list: `static-conversion\reports\batch1-7-convert-20260808-173900\exclude-s
 
 ## 11. Related docs
 
+- [SOP-MACHINE-SETUP.pdf](./SOP-MACHINE-SETUP.pdf) — new Windows PC kit, junctions, `.env`
 - [SOP-FLEET-STATIC-WORKFLOW.md](./SOP-FLEET-STATIC-WORKFLOW.md) — 13 Aug architecture SOP
 - [01-big-picture.md](./01-big-picture.md) — Model A vs B
 - [07-rollback-and-edit.md](./07-rollback-and-edit.md) — revert scripts
