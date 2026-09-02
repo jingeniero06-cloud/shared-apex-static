@@ -5,7 +5,10 @@ alwaysApply: true
 
 # Fleet static = live WordPress
 
-WordPress on hosting IP `174.136.29.214` is the source of truth. Static must match the **current** WP snapshot, never an old KV copy.
+WordPress is the source of truth. Static must match the **current** WP snapshot, never an old KV copy.
+
+- Server 2 (Batches 1–7, `fleet-static-worker`): hosting IP `174.136.29.214`
+- Server 1 (new batches, `fleet-static-worker-server-1`): hosting IP `165.140.157.43`
 
 ## Refresh / cutover (use this, not KV-to-KV migrate)
 
@@ -13,6 +16,8 @@ Live WP → scrape via hosting IP → `HTML_FLEET` + `fleet-static-assets` → `
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\Invoke-WpOriginToFleet.ps1 -SitesCsv .\reports\{csv} -HostingIp 174.136.29.214
+# Server 1:
+powershell -ExecutionPolicy Bypass -File .\scripts\Invoke-WpOriginToFleet.ps1 -SitesCsv .\reports\{csv} -HostingIp 165.140.157.43 -WorkerName fleet-static-worker-server-1
 ```
 
 Do **not** use `Invoke-MigrateSitesToFleet.ps1` to refresh content (that copies stale per-site KV).

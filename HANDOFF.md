@@ -7,6 +7,12 @@
 This folder (`shared-apex-static`) is **Part B — shared fleet migrate only**.  
 WordPress → static conversion lives in `static-conversion` (Part A).
 
+**Operating SOP** (preview → apex cutover → origin-IP rescrape, including rollback-to-WP edit loop):  
+[`docs/SOP-CONVERT-PREVIEW-CUTOVER-RESCRAPE.html`](./docs/SOP-CONVERT-PREVIEW-CUTOVER-RESCRAPE.html)
+
+**aaPanel staging** (`dev.` / `static.` / apex diagrams):  
+[`docs/aapanel-dev-workflows.html`](./docs/aapanel-dev-workflows.html)
+
 **How teammates get this:** kit zip / shared drive (not GitHub). Strip `.env` before sharing.
 
 Do not modify `static-conversion` for fleet Worker/KV/R2 work.

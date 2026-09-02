@@ -5,8 +5,8 @@ alwaysApply: true
 
 # Fleet Worker split + Adam API
 
-- Server 2 `fleet-static-worker` = Batches 1–7 live apex. Do not move B1–7 onto server 1.
-- Server 1 `fleet-static-worker-server-1` = new batches after B1–7.
+- Server 2 `fleet-static-worker` = Batches 1–7 live apex. Origin IP `174.136.29.214`. Do not move B1–7 onto server 1.
+- Server 1 `fleet-static-worker-server-1` = new batches after B1–7. Origin IP `165.140.157.43`.
 - Both share KV `HTML_FLEET` + R2 `fleet-static-assets`. Keys: `{host}:html:` / `{host}:asset:`. Preview uses `static.{domain}:…`.
 
 Adam `POST …/provision-originless` (and `/scrape` with `"fleet": true`):

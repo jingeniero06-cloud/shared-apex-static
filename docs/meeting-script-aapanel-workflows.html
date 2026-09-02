@@ -43,15 +43,15 @@
 <body>
   <div class="page">
     <p class="kicker">Meeting talking script &middot; ~10 minutes</p>
-    <h1>Two workflows, one rule: edit WordPress in aaPanel, never on live static</h1>
+    <h1>Two operating paths: fleet rollback-to-WP, or optional aaPanel staging</h1>
     <p class="lede">Read this out. Pause at the blue boxes. You can skip a sentence if the room is already nodding.</p>
 
     <h2>Open</h2>
     <div class="say">
       <p class="who">You say</p>
-      <p>Thanks everyone. I just want us on the same page for how we edit sites and how we convert a WordPress site to static. Nothing fancy. Two paths, same idea.</p>
-      <p>If the live site is already static, we do not type into production. We restore WordPress in <strong>aaPanel</strong> on <code>dev.domain.com</code>, edit there, then scrape to static when it is ready.</p>
-      <p>If the live site is still WordPress, we still use aaPanel for the staging copy when we can, so production stays calm while we fix things.</p>
+      <p>Thanks everyone. Same picture as the SOP. We never type into live static HTML or KV.</p>
+      <p>If the live site is already on the fleet Worker, the default CMS path is: take Worker routes off apex, edit WordPress, scrape via the hosting IP, put fleet back, inject form-validation. That is SOP Path C. That is what we did for the form-ID sites.</p>
+      <p>aaPanel on <code>dev.domain.com</code> is optional staging when live apex must stay static. New converts still QA on <code>static.domain.com</code> before we cut over apex.</p>
     </div>
 
     <h2>The three hosts</h2>
@@ -71,35 +71,31 @@
     </div>
     <div class="say">
       <p class="who">You say</p>
-      <p>Three addresses. aaPanel holds WordPress on <code>dev.domain.com</code>. Cloudflare holds static preview and, after we switch, live production. We never mix those jobs.</p>
+      <p>Three addresses, plus the live-WP rollback. After cutover, CMS work on fleet sites is SOP Path C, not editing KV. aaPanel <code>dev.</code> is extra staging when we need it.</p>
     </div>
     <div class="say ask">
       <p class="who">Ask the room</p>
       <p>Does everyone agree those three names? <code>dev.</code> for edits in aaPanel, <code>static.</code> for preview, apex for live?</p>
     </div>
 
-    <h2>Workflow 1 &mdash; live site is already static</h2>
+    <h2>Workflow 1 &mdash; already static: fleet Path C (default) or aaPanel staging</h2>
     <div class="say">
       <p class="who">You say</p>
-      <p>This is the everyday edit path. Production stays static. Visitors keep seeing the live site while we work.</p>
+      <p><strong>Default for fleet.</strong> Rollback apex/www Worker routes. Keep KV, R2, and <code>static.*</code>. Edit on live WordPress. Scrape with the origin IP (Server 2 <code>174.136.29.214</code> or Server 1 <code>165.140.157.43</code>). Restore fleet. Inject <code>/form-validation.js</code>. Proof: <code>200</code>, <code>x-source: kv</code>, <code>x-fleet-host</code>.</p>
+      <p>Optional aaPanel staging if live apex must stay static:</p>
       <ol class="steps">
         <li>Restore the latest WordPress backup in <strong>aaPanel</strong>.</li>
-        <li>Put it on <code>dev.domain.com</code> in aaPanel.</li>
-        <li>Edit and fix there. Blogs, SEO, layout, forms. Not on the live static site.</li>
-        <li>Backup that edited WordPress in aaPanel so we do not lose the work.</li>
-        <li>Audit the WP subdomain. If it fails, stay in aaPanel and fix. Do not scrape yet.</li>
-        <li>When WP passes, scrape to <code>static.domain.com</code>.</li>
-        <li>Compare WP staging vs static staging. Same pages, forms, SEO, mobile.</li>
-        <li>Audit static. If it fails, scrape again from the good aaPanel copy. Do not push live.</li>
-        <li>Compare static staging vs live static production, so we know what will change.</li>
-        <li>Push to production. Keep the previous version for rollback.</li>
-        <li>Quick live check: pages, forms, images, SSL. Then we are done.</li>
+        <li>Put it on <code>dev.domain.com</code>.</li>
+        <li>Edit there. Not on live static HTML.</li>
+        <li>Backup that edited WordPress.</li>
+        <li>Audit <code>dev.</code>. Fail? Stay in aaPanel. Do not scrape yet.</li>
+        <li>When WP passes, scrape to <code>static.domain.com</code> via the hosting IP.</li>
+        <li>Compare and audit static. Then promote apex.</li>
       </ol>
-      <p>The loop is simple. Fail on WordPress? Fix in aaPanel. Fail on static? Scrape again. Live does not move until both audits pass.</p>
     </div>
     <div class="say ask">
       <p class="who">Ask the room</p>
-      <p>Any reason we would still edit a live static site directly? If not, we lock this: aaPanel only for WordPress edits.</p>
+      <p>Agreed that fleet CMS edits roll apex back to WordPress, and we do not edit KV by hand?</p>
     </div>
 
     <h2>Workflow 2 &mdash; live site is still WordPress</h2>
@@ -119,7 +115,7 @@
         <li>Then we switch production to static.</li>
         <li>Post-deploy check on the live domain.</li>
       </ol>
-      <p>After that cutover, future edits use Workflow 1. We do not keep editing production WordPress once the site is static.</p>
+      <p>After that cutover, future CMS edits use SOP Path C (rollback to WP). Stay-WordPress sites stay on WP forever.</p>
     </div>
     <div class="say ask">
       <p class="who">Ask the room</p>
@@ -131,18 +127,18 @@
       <p class="who">You say</p>
       <p>Quick don&rsquo;ts, so nobody gets surprised later.</p>
       <ul>
-        <li>We do not roll a live static site back to WordPress just to change a blog post.</li>
-        <li>We do not edit KV or static HTML by hand.</li>
-        <li>We do not scrape &ldquo;because it has been a while.&rdquo; We scrape when the aaPanel edit is ready.</li>
-        <li>We do not stand up a new Worker per site. Fleet Worker only.</li>
+        <li>We do not type into KV or static HTML.</li>
+        <li>We do not scrape public HTTPS on a live fleet site (that recopies old KV).</li>
+        <li>We do not skip form-validation inject after an HTML scrape.</li>
+        <li>We do not convert Stay-WordPress. We do not omit <code>workerName</code> on a new-batch Adam scrape.</li>
       </ul>
     </div>
 
     <h2>Close</h2>
     <div class="say">
       <p class="who">You say</p>
-      <p>So the picture is: <strong>aaPanel = WordPress staging edits</strong>. <strong>static. = preview</strong>. <strong>Apex = live</strong>. Two workflows, same rule.</p>
-      <p>If that is agreed, we follow this on the next sites. Happy to walk one real domain through it with whoever owns the first edit.</p>
+      <p>So: <strong>never edit live static HTML</strong>. Fleet CMS = rollback to WP, then origin-IP scrape. New convert = <code>static.</code> preview, then apex cutover. aaPanel <code>dev.</code> is optional staging.</p>
+      <p>The written SOP is SOP-CONVERT-PREVIEW-CUTOVER-RESCRAPE. Happy to walk one real domain through it.</p>
     </div>
     <div class="say ask">
       <p class="who">Ask the room</p>
@@ -150,7 +146,8 @@
     </div>
 
     <footer>
-      Pair with the two-workflow diagram. Staging WordPress lives in aaPanel on dev.domain.com.
+      Pair with <a href="./aapanel-dev-workflows.html">aapanel-dev-workflows.html</a>
+      and <a href="./SOP-CONVERT-PREVIEW-CUTOVER-RESCRAPE.html">SOP-CONVERT-PREVIEW-CUTOVER-RESCRAPE.html</a>.
     </footer>
   </div>
 </body>

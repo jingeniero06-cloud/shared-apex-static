@@ -1,0 +1,35 @@
+---
+description: Convert WordPress to fleet static via static.* preview, apex cutover, and origin-IP rescrape
+alwaysApply: true
+---
+
+# Convert, preview, cutover, rescrape
+
+WordPress on the hosting IP is the source of truth. Never scrape public HTTPS on a host that already returns `x-source: kv` (that recopies stale static).
+
+## Origin IPs and Workers
+
+- Server 2 / Batches 1–7 live apex → `fleet-static-worker` + origin `174.136.29.214`
+- Server 1 / new batches → `fleet-static-worker-server-1` + origin `165.140.157.43`
+- Shared `HTML_FLEET` + `fleet-static-assets`. Keys `{host}:html:` / `{host}:asset:`. Preview keys `static.{domain}:…`
+- Do not move B1–7 live apex onto server 1
+
+## New convert (apex still WordPress)
+
+1. Scrape WP via the correct origin IP into `HTML_FLEET` + R2
+2. Attach `static.{domain}/*` only; QA vs live WP (26-check, eyeball)
+3. After sign-off, cut over apex + www to the same fleet Worker
+4. Inject `/form-validation.js` (origin WP never has the tag)
+5. Proof: `200`, `x-source: kv`, `x-fleet-host`, `/form-validation.js` 200
+
+Scripts: `fleet-static-preview\scripts\Invoke-PreviewStaticOnFleet.ps1` then `Invoke-CutoverApexToFleet.ps1 -IConfirmApexCutover`. Adam `/provision-originless` is preview-only and does not take an origin IP.
+
+## Rescrape (already static)
+
+`Invoke-WpOriginToFleet.ps1` with `--resolve` to the hosting IP. `-SkipRoutes` if apex is already fleet. HTML-only (`-SkipAssets`) when only HTML/popups changed; full HTML+R2 when theme/media changed. Re-inject form-validation after every HTML scrape.
+
+## Edit loop
+
+Rollback Worker routes to WordPress → edit on WP → rescrape → restore fleet routes → verify headers.
+
+Stay-WordPress excludes are never converted. Usman injects form JS on remaining WordPress sites; we inject fleet/static sites through Cloudflare.
