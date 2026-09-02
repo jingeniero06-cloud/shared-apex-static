@@ -8,7 +8,10 @@ param(
   [Parameter(Mandatory = $true)][string] $SitesCsv,
   [int] $MaxPages = 150,
   [string] $EnvFile,
-  [string] $HostingIp = '174.136.29.214'
+  [string] $HostingIp = '174.136.29.214',
+  [string] $WorkerName,
+  [switch] $SkipRoutes,
+  [switch] $SkipAssets
 )
 
 $ErrorActionPreference = 'Continue'
@@ -23,8 +26,17 @@ Get-Content $EnvFile -Encoding UTF8 | ForEach-Object {
 }
 $AccountId = $vars['CLOUDFLARE_ACCOUNT_ID']
 $Token = $vars['CLOUDFLARE_API_TOKEN']
-$WorkerName = if ($vars['FLEET_WORKER_NAME']) { $vars['FLEET_WORKER_NAME'] } else { 'fleet-static-worker' }
-if ($vars['HOSTING_IP']) { $HostingIp = $vars['HOSTING_IP'] }
+if (-not $WorkerName) {
+  $WorkerName = if ($vars['FLEET_WORKER_NAME']) { $vars['FLEET_WORKER_NAME'] } else { 'fleet-static-worker' }
+}
+# CLI -HostingIp wins. Server 1 worker defaults to 165.140.157.43, not .env HOSTING_IP (that's Server 2).
+if (-not $PSBoundParameters.ContainsKey('HostingIp')) {
+  if ($WorkerName -eq 'fleet-static-worker-server-1') {
+    $HostingIp = if ($vars['HOSTING_IP_S1']) { $vars['HOSTING_IP_S1'] } else { '165.140.157.43' }
+  } elseif ($vars['HOSTING_IP']) {
+    $HostingIp = $vars['HOSTING_IP']
+  }
+}
 $infra = Get-Content (Join-Path $Root 'reports\fleet-infra.json') -Raw | ConvertFrom-Json
 $FleetKv = $infra.kvNamespaceId
 $FleetR2 = $infra.r2Bucket
@@ -266,6 +278,11 @@ foreach ($site in $sites) {
     $row.Pages = $pageOk
     Write-Host "  KV html pages=$pageOk" -ForegroundColor Green
 
+    if ($SkipAssets) {
+      Write-Host "  SkipAssets: HTML-only, leaving existing R2 objects" -ForegroundColor DarkGray
+      $row.Assets = 0
+      $row.AssetFail = 0
+    } else {
     foreach ($extra in @('/robots.txt', '/sitemap.xml', '/sitemap_index.xml', '/page-sitemap.xml', '/main-sitemap.xsl', '/wp-includes/js/jquery/jquery.min.js', '/wp-includes/js/jquery/jquery-migrate.min.js')) {
       [void]$allAssets.Add($extra)
     }
@@ -298,8 +315,13 @@ foreach ($site in $sites) {
     $row.Assets = $okA
     $row.AssetFail = $failA
     Write-Host "  R2 assets ok=$okA fail=$failA" -ForegroundColor Green
+    }
 
-    Set-FleetRoutes $zoneId $domain
+    if ($SkipRoutes) {
+      Write-Host "  SkipRoutes: leaving existing Worker routes in place" -ForegroundColor DarkGray
+    } else {
+      Set-FleetRoutes $zoneId $domain
+    }
     try {
       Invoke-RestMethod -Method POST -Uri "https://api.cloudflare.com/client/v4/zones/$zoneId/purge_cache" `
         -Headers ($h + @{ 'Content-Type' = 'application/json' }) -Body '{"purge_everything":true}' -TimeoutSec 40 | Out-Null

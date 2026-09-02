@@ -47,6 +47,13 @@
     .do { color: var(--ok); font-weight: 650; }
     .dont { color: var(--fail); font-weight: 650; }
     footer { margin-top: 24px; font-size: 12px; color: var(--muted); }
+    .fleet {
+      background: #fff; border: 1px solid var(--line); border-left: 4px solid var(--prod);
+      padding: 12px 16px; margin: 0 0 20px; font-size: 13px;
+    }
+    .fleet strong { color: var(--prod); }
+    .fleet p { margin: 0 0 8px; }
+    .fleet p:last-child { margin: 0; }
     @media (max-width: 900px) { .hosts, .cols { grid-template-columns: 1fr; } }
     @media print { body { background: #fff; } .page { padding: 10px; } .col { break-inside: avoid; } }
   </style>
@@ -54,12 +61,25 @@
 <body>
   <div class="page">
     <p class="kicker">Team workflow &middot; aaPanel staging</p>
-    <h1>Edit in aaPanel on dev.domain.com. Preview on static. Live on apex.</h1>
+    <h1>Fleet edits: rollback apex to WordPress. aaPanel <code>dev.</code> is optional staging.</h1>
     <p class="lede">
-      Two paths, same rule. WordPress edits happen in aaPanel at
-      <strong>dev.domain.com</strong>. We audit on <strong>static.domain.com</strong>
-      before production. We do not type into live static HTML.
+      Do not type into live static HTML or KV. New converts still preview on
+      <strong>static.domain.com</strong> before apex cutover. For an already-fleet
+      site, the default CMS path is rollback to live WordPress (SOP Path C), not
+      aaPanel <code>dev.</code> unless you need a separate staging copy.
     </p>
+    <div class="fleet">
+      <p><strong>Fleet default (already static on Cloudflare).</strong>
+      Rollback Worker routes so apex/www hit WordPress. Keep KV, R2, and
+      <code>static.*</code>. Edit and verify on live WP. Scrape via the hosting IP
+      (<code>174.136.29.214</code> Server 2 / Batches 1–7, or
+      <code>165.140.157.43</code> Server 1). Restore fleet routes. Re-inject
+      <code>/form-validation.js</code>. Proof: <code>200</code>,
+      <code>x-source: kv</code>, <code>x-fleet-host</code>.</p>
+      <p>Full operating SOP:
+      <a href="./SOP-CONVERT-PREVIEW-CUTOVER-RESCRAPE.html">SOP-CONVERT-PREVIEW-CUTOVER-RESCRAPE.html</a>
+      (convert, preview, cutover, rescrape). Stay-WordPress excludes are never converted.</p>
+    </div>
 
     <div class="hosts">
       <div class="host wp">
@@ -72,13 +92,13 @@
       </div>
       <div class="host pr">
         <code>domain.com</code>
-        <p>Live production. Do not edit HTML here.</p>
+        <p>Live production. Do not edit HTML here. CMS: rollback Worker first (SOP Path C).</p>
       </div>
     </div>
 
     <div class="cols">
       <div class="col w1">
-        <h2>Workflow 1 &mdash; live site is already static</h2>
+        <h2>Workflow 1 &mdash; optional aaPanel staging (apex stays static)</h2>
         <div class="diagram">
           <svg viewBox="0 0 520 1180" role="img" aria-labelledby="w1t w1d">
             <title id="w1t">Edit an existing static production site</title>
@@ -159,7 +179,7 @@
             <text x="220" y="1048" text-anchor="middle" font-size="13" fill="#1a2332">Pages, forms, images, SEO, SSL</text>
 
             <rect x="40" y="1090" width="360" height="40" fill="#eef1f5" stroke="#d5dce6"/>
-            <text x="220" y="1115" text-anchor="middle" font-size="12" fill="#1a2332">During edits, live apex stays static</text>
+            <text x="220" y="1115" text-anchor="middle" font-size="12" fill="#1a2332">Optional path: live apex stays static</text>
           </svg>
         </div>
       </div>
@@ -257,22 +277,22 @@
       <span><b>Green arrow</b> = pass, continue</span>
       <span><b>Diamond</b> = audit gate</span>
     </div>
-    <p class="caption">After Workflow 2 cutover, future edits use Workflow 1. We do not keep editing production WordPress once the site is static.</p>
+    <p class="caption">After Workflow 2 cutover, CMS edits on fleet sites use SOP Path C (rollback apex to WordPress, then origin-IP rescrape). Workflow 1 is optional aaPanel staging when you must keep live apex static. Never edit KV by hand.</p>
 
     <h2>Do / don&rsquo;t</h2>
     <table>
       <thead><tr><th></th><th>Practice</th></tr></thead>
       <tbody>
-        <tr><td class="do">Do</td><td>Edit WordPress only in aaPanel on <code>dev.domain.com</code>.</td></tr>
-        <tr><td class="do">Do</td><td>Audit <code>static.domain.com</code> before touching live apex.</td></tr>
-        <tr><td class="do">Do</td><td>Backup the edited WP in aaPanel before scrape.</td></tr>
+        <tr><td class="do">Do</td><td>For fleet CMS edits (forms, popups, Elementor IDs): rollback apex to WordPress, edit origin, rescrape via hosting IP. See SOP Path C.</td></tr>
+        <tr><td class="do">Do</td><td>For a first convert: scrape to <code>static.domain.com</code>, QA, then cut over apex. Origin IP, not public HTTPS if live is already <code>x-source: kv</code>.</td></tr>
+        <tr><td class="do">Do</td><td>Use aaPanel <code>dev.domain.com</code> when you need a staging copy and live apex must stay static.</td></tr>
         <tr><td class="dont">Don&rsquo;t</td><td>Type into live static HTML or KV.</td></tr>
-        <tr><td class="dont">Don&rsquo;t</td><td>Roll production back to WordPress just to change a blog post.</td></tr>
-        <tr><td class="dont">Don&rsquo;t</td><td>Scrape because time passed. Scrape when the aaPanel edit is ready.</td></tr>
+        <tr><td class="dont">Don&rsquo;t</td><td>Scrape public HTTPS on a live fleet site (copies stale KV). Never convert Stay-WordPress.</td></tr>
+        <tr><td class="dont">Don&rsquo;t</td><td>Skip <code>/form-validation.js</code> inject after an HTML scrape of a fleet site.</td></tr>
       </tbody>
     </table>
 
-    <footer>Pair with the meeting script. Hosts: dev. = aaPanel edits, static. = preview, apex = live.</footer>
+    <footer>Pair with the meeting script and <a href="./SOP-CONVERT-PREVIEW-CUTOVER-RESCRAPE.html">SOP convert / preview / cutover / rescrape</a>. Fleet Path C = rollback apex to WP. aaPanel <code>dev.</code> = optional staging.</footer>
   </div>
 </body>
 </html>

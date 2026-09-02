@@ -8,7 +8,17 @@
 **New teammate?** Start with the combined handoff package:  
 `..\static-fleet-handoff\README.md` (also see [`HANDOFF.md`](./HANDOFF.md)).
 
-**Team SOP** (fleet decision, convert/rollback loop, SEO exemptions):  
+**New machine setup** (copy kit, `fleet\` links, `.env`, smoke tests):  
+[`docs/SOP-MACHINE-SETUP.md`](./docs/SOP-MACHINE-SETUP.md) · [HTML](./docs/SOP-MACHINE-SETUP.html) · [PDF](./docs/SOP-MACHINE-SETUP.pdf)
+
+**Operating SOP** (static.* preview, apex cutover, origin-IP rescrape):  
+[`docs/SOP-CONVERT-PREVIEW-CUTOVER-RESCRAPE.md`](./docs/SOP-CONVERT-PREVIEW-CUTOVER-RESCRAPE.md) · [HTML](./docs/SOP-CONVERT-PREVIEW-CUTOVER-RESCRAPE.html) · [PDF](./docs/SOP-CONVERT-PREVIEW-CUTOVER-RESCRAPE.pdf)  
+Same files in `..\static-fleet-handoff\` and `..\html-docs-for-sharing\`.
+
+**aaPanel staging diagrams** (`dev.` / `static.` / apex):  
+[`docs/aapanel-dev-workflows.html`](./docs/aapanel-dev-workflows.html)
+
+**Architecture SOP** (fleet decision, convert/rollback loop, SEO exemptions):  
 `..\static-fleet-handoff\SOP-FLEET-STATIC-WORKFLOW.md`
 
 ## Can the team use this?
@@ -23,7 +33,8 @@ Fleet infra already exists in Cloudflare:
 | Worker 2 | `fleet-static-worker-server-1` (same KV/R2; new batches after B1–7) |
 | KV | `HTML_FLEET` |
 | R2 | `fleet-static-assets` |
-| Hosting IP | `174.136.29.214` |
+| Hosting IP (Server 2 / B1–7) | `174.136.29.214` |
+| Hosting IP (Server 1 / new batches) | `165.140.157.43` |
 
 ## Setup
 
