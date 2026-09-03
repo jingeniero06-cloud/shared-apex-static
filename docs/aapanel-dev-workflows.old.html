@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>aaPanel workflows &mdash; dev. / static. / production</title>
+  <style>
+    :root {
+      --ink: #1a2332; --muted: #5b6777; --line: #d5dce6; --paper: #f6f7f9;
+      --card: #fff; --wp: #2271b1; --stage: #0f766e; --prod: #1d4ed8;
+      --ok: #15803d; --fail: #b42318; --warn: #b45309;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; }
+    body {
+      font-family: "Segoe UI", Calibri, system-ui, sans-serif;
+      color: var(--ink); background: var(--paper); line-height: 1.4;
+    }
+    .page { max-width: 1240px; margin: 0 auto; padding: 28px 24px 56px; }
+    .kicker { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin: 0 0 8px; }
+    h1 { font-size: 26px; font-weight: 650; margin: 0 0 8px; letter-spacing: -0.02em; }
+    .lede { margin: 0 0 20px; color: var(--muted); max-width: 82ch; }
+    h2 { font-size: 15px; margin: 28px 0 10px; }
+    .hosts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+    .host { background: var(--card); border: 1px solid var(--line); padding: 12px 14px; }
+    .host code { display: block; font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+    .host p { margin: 0; font-size: 13px; color: var(--muted); }
+    .host.wp code { color: var(--wp); }
+    .host.st code { color: var(--stage); }
+    .host.pr code { color: var(--prod); }
+    .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .col { background: var(--card); border: 1px solid var(--line); }
+    .col h2 {
+      margin: 0; padding: 12px 14px; font-size: 14px; letter-spacing: 0.02em;
+      border-bottom: 1px solid var(--line);
+    }
+    .col.w1 h2 { background: #eef2fb; color: var(--prod); }
+    .col.w2 h2 { background: #eef6f4; color: var(--stage); }
+    .diagram { padding: 8px; overflow-x: auto; }
+    .diagram svg { display: block; width: 100%; height: auto; min-width: 480px; }
+    .caption { font-size: 12px; color: var(--muted); margin: 8px 2px 0; }
+    .legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: var(--muted); margin: 16px 0 0; }
+    .legend b { color: var(--ink); }
+    table { width: 100%; border-collapse: collapse; background: var(--card); font-size: 13px; margin-top: 8px; }
+    th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); background: #eef1f5; }
+    .do { color: var(--ok); font-weight: 650; }
+    .dont { color: var(--fail); font-weight: 650; }
+    footer { margin-top: 24px; font-size: 12px; color: var(--muted); }
+    @media (max-width: 900px) { .hosts, .cols { grid-template-columns: 1fr; } }
+    @media print { body { background: #fff; } .page { padding: 10px; } .col { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <p class="kicker">Team workflow &middot; aaPanel staging</p>
+    <h1>Edit in aaPanel on dev.domain.com. Preview on static. Live on apex.</h1>
+    <p class="lede">
+      Two paths, same rule. WordPress edits happen in aaPanel at
+      <strong>dev.domain.com</strong>. We audit on <strong>static.domain.com</strong>
+      before production. We do not type into live static HTML.
+    </p>
+
+    <div class="hosts">
+      <div class="host wp">
+        <code>dev.domain.com</code>
+        <p>aaPanel. Restore, edit, backup WordPress here.</p>
+      </div>
+      <div class="host st">
+        <code>static.domain.com</code>
+        <p>Static preview. Compare and audit before cutover.</p>
+      </div>
+      <div class="host pr">
+        <code>domain.com</code>
+        <p>Live production. Do not edit HTML here.</p>
+      </div>
+    </div>
+
+    <div class="cols">
+      <div class="col w1">
+        <h2>Workflow 1 &mdash; live site is already static</h2>
+        <div class="diagram">
+          <svg viewBox="0 0 520 1180" role="img" aria-labelledby="w1t w1d">
+            <title id="w1t">Edit an existing static production site</title>
+            <desc id="w1d">Restore WordPress in aaPanel on dev.domain.com, edit, audit, scrape to static, then push production only if audits pass.</desc>
+            <defs>
+              <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1.5 L10 5 L0 8.5 z" fill="#1a2332"/></marker>
+              <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1.5 L10 5 L0 8.5 z" fill="#15803d"/></marker>
+              <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1.5 L10 5 L0 8.5 z" fill="#b42318"/></marker>
+            </defs>
+            <rect x="40" y="16" width="360" height="56" fill="#fff" stroke="#2271b1" stroke-width="1.6"/>
+            <text x="220" y="38" text-anchor="middle" font-size="11" fill="#2271b1" font-weight="700">1  RESTORE</text>
+            <text x="220" y="56" text-anchor="middle" font-size="13" fill="#1a2332">Latest WP backup into aaPanel</text>
+            <line x1="220" y1="72" x2="220" y2="92" stroke="#1a2332" marker-end="url(#a)"/>
+
+            <rect x="40" y="92" width="360" height="56" fill="#fff" stroke="#2271b1" stroke-width="1.6"/>
+            <text x="220" y="114" text-anchor="middle" font-size="11" fill="#2271b1" font-weight="700">2  STAGING</text>
+            <text x="220" y="132" text-anchor="middle" font-size="13" fill="#1a2332">Push to dev.domain.com</text>
+            <line x1="220" y1="148" x2="220" y2="168" stroke="#1a2332" marker-end="url(#a)"/>
+
+            <rect x="40" y="168" width="360" height="56" fill="#fff" stroke="#2271b1" stroke-width="1.6"/>
+            <text x="220" y="190" text-anchor="middle" font-size="11" fill="#2271b1" font-weight="700">3  EDIT</text>
+            <text x="220" y="208" text-anchor="middle" font-size="13" fill="#1a2332">Fix site in aaPanel (not live static)</text>
+            <line x1="220" y1="224" x2="220" y2="244" stroke="#1a2332" marker-end="url(#a)"/>
+
+            <rect x="40" y="244" width="360" height="56" fill="#fff" stroke="#b45309" stroke-width="1.6"/>
+            <text x="220" y="266" text-anchor="middle" font-size="11" fill="#b45309" font-weight="700">4  BACKUP</text>
+            <text x="220" y="284" text-anchor="middle" font-size="13" fill="#1a2332">Backup the edited WP in aaPanel</text>
+            <line x1="220" y1="300" x2="220" y2="320" stroke="#1a2332" marker-end="url(#a)"/>
+
+            <rect x="40" y="320" width="360" height="56" fill="#fff" stroke="#2271b1" stroke-width="1.6"/>
+            <text x="220" y="342" text-anchor="middle" font-size="11" fill="#2271b1" font-weight="700">5  AUDIT DEV</text>
+            <text x="220" y="360" text-anchor="middle" font-size="13" fill="#1a2332">Scan + human check on dev.domain.com</text>
+            <line x1="220" y1="376" x2="220" y2="404" stroke="#1a2332" marker-end="url(#a)"/>
+
+            <polygon points="220,404 300,444 220,484 140,444" fill="#fff" stroke="#1a2332" stroke-width="1.6"/>
+            <text x="220" y="440" text-anchor="middle" font-size="12" font-weight="650">Pass?</text>
+            <text x="220" y="456" text-anchor="middle" font-size="11" fill="#5b6777">dev. audit</text>
+            <path d="M140 444 L48 444 L48 196 L40 196" fill="none" stroke="#b42318" stroke-width="1.6" marker-end="url(#ar)"/>
+            <text x="56" y="320" fill="#b42318" font-size="11" font-weight="700">No &rarr; step 3</text>
+            <line x1="220" y1="484" x2="220" y2="512" stroke="#15803d" stroke-width="1.6" marker-end="url(#ag)"/>
+            <text x="232" y="504" fill="#15803d" font-size="11" font-weight="700">Yes</text>
+
+            <rect x="40" y="512" width="360" height="56" fill="#fff" stroke="#0f766e" stroke-width="1.6"/>
+            <text x="220" y="534" text-anchor="middle" font-size="11" fill="#0f766e" font-weight="700">6  SCRAPE</text>
+            <text x="220" y="552" text-anchor="middle" font-size="13" fill="#1a2332">Push to static.domain.com</text>
+            <line x1="220" y1="568" x2="220" y2="588" stroke="#1a2332" marker-end="url(#a)"/>
+
+            <rect x="40" y="588" width="360" height="56" fill="#fff" stroke="#0f766e" stroke-width="1.6"/>
+            <text x="220" y="610" text-anchor="middle" font-size="11" fill="#0f766e" font-weight="700">7  COMPARE</text>
+            <text x="220" y="628" text-anchor="middle" font-size="13" fill="#1a2332">dev.domain.com vs static.domain.com</text>
+            <line x1="220" y1="644" x2="220" y2="664" stroke="#1a2332" marker-end="url(#a)"/>
+
+            <rect x="40" y="664" width="360" height="56" fill="#fff" stroke="#0f766e" stroke-width="1.6"/>
+            <text x="220" y="686" text-anchor="middle" font-size="11" fill="#0f766e" font-weight="700">8  AUDIT STATIC</text>
+            <text x="220" y="704" text-anchor="middle" font-size="13" fill="#1a2332">Scan + human check on static.</text>
+            <line x1="220" y1="720" x2="220" y2="748" stroke="#1a2332" marker-end="url(#a)"/>
+
+            <polygon points="220,748 300,788 220,828 140,788" fill="#fff" stroke="#1a2332" stroke-width="1.6"/>
+            <text x="220" y="784" text-anchor="middle" font-size="12" font-weight="650">Pass?</text>
+            <text x="220" y="800" text-anchor="middle" font-size="11" fill="#5b6777">static. audit</text>
+            <path d="M140 788 L20 788 L20 540 L40 540" fill="none" stroke="#b42318" stroke-width="1.6" marker-end="url(#ar)"/>
+            <text x="24" y="660" fill="#b42318" font-size="11" font-weight="700">No &rarr; step 6</text>
+            <line x1="220" y1="828" x2="220" y2="856" stroke="#15803d" stroke-width="1.6" marker-end="url(#ag)"/>
+            <text x="232" y="848" fill="#15803d" font-size="11" font-weight="700">Yes</text>
+
+            <rect x="40" y="856" width="360" height="56" fill="#fff" stroke="#1d4ed8" stroke-width="1.6"/>
+            <text x="220" y="878" text-anchor="middle" font-size="11" fill="#1d4ed8" font-weight="700">9  COMPARE LIVE</text>
+            <text x="220" y="896" text-anchor="middle" font-size="13" fill="#1a2332">static. vs live domain.com</text>
+            <line x1="220" y1="912" x2="220" y2="932" stroke="#1a2332" marker-end="url(#a)"/>
+
+            <rect x="40" y="932" width="360" height="56" fill="#fff" stroke="#1d4ed8" stroke-width="1.6"/>
+            <text x="220" y="954" text-anchor="middle" font-size="11" fill="#1d4ed8" font-weight="700">10  PRODUCTION</text>
+            <text x="220" y="972" text-anchor="middle" font-size="13" fill="#1a2332">Push apex. Keep prior version to roll back</text>
+            <line x1="220" y1="988" x2="220" y2="1008" stroke="#1a2332" marker-end="url(#a)"/>
+
+            <rect x="40" y="1008" width="360" height="56" fill="#fff" stroke="#15803d" stroke-width="1.6"/>
+            <text x="220" y="1030" text-anchor="middle" font-size="11" fill="#15803d" font-weight="700">11  LIVE CHECK</text>
+            <text x="220" y="1048" text-anchor="middle" font-size="13" fill="#1a2332">Pages, forms, images, SEO, SSL</text>
+
+            <rect x="40" y="1090" width="360" height="40" fill="#eef1f5" stroke="#d5dce6"/>
+            <text x="220" y="1115" text-anchor="middle" font-size="12" fill="#1a2332">During edits, live apex stays static</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="col w2">
+        <h2>Workflow 2 &mdash; live site is still WordPress</h2>
+        <div class="diagram">
+          <svg viewBox="0 0 520 1180" role="img" aria-labelledby="w2t w2d">
+            <title id="w2t">First conversion while production is WordPress</title>
+            <desc id="w2d">Audit live WordPress, edit on dev.domain.com in aaPanel, scrape to static.domain.com, then cut over apex only after approval.</desc>
+            <defs>
+              <marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1.5 L10 5 L0 8.5 z" fill="#1a2332"/></marker>
+              <marker id="bg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1.5 L10 5 L0 8.5 z" fill="#15803d"/></marker>
+              <marker id="br" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 1.5 L10 5 L0 8.5 z" fill="#b42318"/></marker>
+            </defs>
+            <rect x="40" y="16" width="360" height="56" fill="#fff" stroke="#2271b1" stroke-width="1.6"/>
+            <text x="220" y="38" text-anchor="middle" font-size="11" fill="#2271b1" font-weight="700">1  AUDIT LIVE WP</text>
+            <text x="220" y="56" text-anchor="middle" font-size="13" fill="#1a2332">Scan + human check on domain.com</text>
+            <line x1="220" y1="72" x2="220" y2="92" stroke="#1a2332" marker-end="url(#b)"/>
+
+            <rect x="40" y="92" width="360" height="56" fill="#fff" stroke="#2271b1" stroke-width="1.6"/>
+            <text x="220" y="114" text-anchor="middle" font-size="11" fill="#2271b1" font-weight="700">2  EDIT</text>
+            <text x="220" y="132" text-anchor="middle" font-size="13" fill="#1a2332">Fix on dev.domain.com in aaPanel</text>
+            <line x1="220" y1="148" x2="220" y2="168" stroke="#1a2332" marker-end="url(#b)"/>
+
+            <rect x="40" y="168" width="360" height="56" fill="#fff" stroke="#2271b1" stroke-width="1.6"/>
+            <text x="220" y="190" text-anchor="middle" font-size="11" fill="#2271b1" font-weight="700">3  RE-AUDIT</text>
+            <text x="220" y="208" text-anchor="middle" font-size="13" fill="#1a2332">Confirm fixes on the staging copy</text>
+            <line x1="220" y1="224" x2="220" y2="252" stroke="#1a2332" marker-end="url(#b)"/>
+
+            <polygon points="220,252 300,292 220,332 140,292" fill="#fff" stroke="#1a2332" stroke-width="1.6"/>
+            <text x="220" y="288" text-anchor="middle" font-size="12" font-weight="650">Pass?</text>
+            <text x="220" y="304" text-anchor="middle" font-size="11" fill="#5b6777">dev. audit</text>
+            <path d="M140 292 L48 292 L48 120 L40 120" fill="none" stroke="#b42318" stroke-width="1.6" marker-end="url(#br)"/>
+            <text x="56" y="210" fill="#b42318" font-size="11" font-weight="700">No &rarr; step 2</text>
+            <line x1="220" y1="332" x2="220" y2="360" stroke="#15803d" stroke-width="1.6" marker-end="url(#bg)"/>
+            <text x="232" y="352" fill="#15803d" font-size="11" font-weight="700">Yes</text>
+
+            <rect x="40" y="360" width="360" height="56" fill="#fff" stroke="#b45309" stroke-width="1.6"/>
+            <text x="220" y="382" text-anchor="middle" font-size="11" fill="#b45309" font-weight="700">4  BACKUP</text>
+            <text x="220" y="400" text-anchor="middle" font-size="13" fill="#1a2332">aaPanel staging copy + production backup</text>
+            <line x1="220" y1="416" x2="220" y2="436" stroke="#1a2332" marker-end="url(#b)"/>
+
+            <rect x="40" y="436" width="360" height="56" fill="#fff" stroke="#0f766e" stroke-width="1.6"/>
+            <text x="220" y="458" text-anchor="middle" font-size="11" fill="#0f766e" font-weight="700">5  CREATE STATIC</text>
+            <text x="220" y="476" text-anchor="middle" font-size="13" fill="#1a2332">static.domain.com if missing</text>
+            <line x1="220" y1="492" x2="220" y2="512" stroke="#1a2332" marker-end="url(#b)"/>
+
+            <rect x="40" y="512" width="360" height="56" fill="#fff" stroke="#0f766e" stroke-width="1.6"/>
+            <text x="220" y="534" text-anchor="middle" font-size="11" fill="#0f766e" font-weight="700">6  SCRAPE</text>
+            <text x="220" y="552" text-anchor="middle" font-size="13" fill="#1a2332">WordPress &rarr; static.domain.com</text>
+            <line x1="220" y1="568" x2="220" y2="588" stroke="#1a2332" marker-end="url(#b)"/>
+
+            <rect x="40" y="588" width="360" height="56" fill="#fff" stroke="#0f766e" stroke-width="1.6"/>
+            <text x="220" y="610" text-anchor="middle" font-size="11" fill="#0f766e" font-weight="700">7  AUDIT STATIC</text>
+            <text x="220" y="628" text-anchor="middle" font-size="13" fill="#1a2332">Scan + human check on static.</text>
+            <line x1="220" y1="644" x2="220" y2="672" stroke="#1a2332" marker-end="url(#b)"/>
+
+            <polygon points="220,672 300,712 220,752 140,712" fill="#fff" stroke="#1a2332" stroke-width="1.6"/>
+            <text x="220" y="708" text-anchor="middle" font-size="12" font-weight="650">Pass?</text>
+            <text x="220" y="724" text-anchor="middle" font-size="11" fill="#5b6777">static. audit</text>
+            <path d="M140 712 L20 712 L20 540 L40 540" fill="none" stroke="#b42318" stroke-width="1.6" marker-end="url(#br)"/>
+            <text x="24" y="624" fill="#b42318" font-size="11" font-weight="700">No &rarr; step 6</text>
+            <line x1="220" y1="752" x2="220" y2="780" stroke="#15803d" stroke-width="1.6" marker-end="url(#bg)"/>
+            <text x="232" y="772" fill="#15803d" font-size="11" font-weight="700">Yes</text>
+
+            <rect x="40" y="780" width="360" height="56" fill="#fff" stroke="#0f766e" stroke-width="1.6"/>
+            <text x="220" y="802" text-anchor="middle" font-size="11" fill="#0f766e" font-weight="700">8  COMPARE</text>
+            <text x="220" y="820" text-anchor="middle" font-size="13" fill="#1a2332">static. vs live WordPress</text>
+            <line x1="220" y1="836" x2="220" y2="856" stroke="#1a2332" marker-end="url(#b)"/>
+
+            <rect x="40" y="856" width="360" height="56" fill="#fff" stroke="#1d4ed8" stroke-width="1.6"/>
+            <text x="220" y="878" text-anchor="middle" font-size="11" fill="#1d4ed8" font-weight="700">9  APPROVAL</text>
+            <text x="220" y="896" text-anchor="middle" font-size="13" fill="#1a2332">Scan, eyeball, and compare all pass</text>
+            <line x1="220" y1="912" x2="220" y2="932" stroke="#1a2332" marker-end="url(#b)"/>
+
+            <rect x="40" y="932" width="360" height="56" fill="#fff" stroke="#1d4ed8" stroke-width="1.6"/>
+            <text x="220" y="954" text-anchor="middle" font-size="11" fill="#1d4ed8" font-weight="700">10  CUTOVER</text>
+            <text x="220" y="972" text-anchor="middle" font-size="13" fill="#1a2332">Switch domain.com to static</text>
+            <line x1="220" y1="988" x2="220" y2="1008" stroke="#1a2332" marker-end="url(#b)"/>
+
+            <rect x="40" y="1008" width="360" height="56" fill="#fff" stroke="#15803d" stroke-width="1.6"/>
+            <text x="220" y="1030" text-anchor="middle" font-size="11" fill="#15803d" font-weight="700">11  LIVE CHECK</text>
+            <text x="220" y="1048" text-anchor="middle" font-size="13" fill="#1a2332">Pages, forms, images, SEO, SSL</text>
+
+            <rect x="40" y="1090" width="360" height="40" fill="#eef1f5" stroke="#d5dce6"/>
+            <text x="220" y="1115" text-anchor="middle" font-size="12" fill="#1a2332">Live WP stays up until static. passes</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span><b>Red arrow</b> = fail, stay and fix</span>
+      <span><b>Green arrow</b> = pass, continue</span>
+      <span><b>Diamond</b> = audit gate</span>
+    </div>
+    <p class="caption">After Workflow 2 cutover, future edits use Workflow 1. We do not keep editing production WordPress once the site is static.</p>
+
+    <h2>Do / don&rsquo;t</h2>
+    <table>
+      <thead><tr><th></th><th>Practice</th></tr></thead>
+      <tbody>
+        <tr><td class="do">Do</td><td>Edit WordPress only in aaPanel on <code>dev.domain.com</code>.</td></tr>
+        <tr><td class="do">Do</td><td>Audit <code>static.domain.com</code> before touching live apex.</td></tr>
+        <tr><td class="do">Do</td><td>Backup the edited WP in aaPanel before scrape.</td></tr>
+        <tr><td class="dont">Don&rsquo;t</td><td>Type into live static HTML or KV.</td></tr>
+        <tr><td class="dont">Don&rsquo;t</td><td>Roll production back to WordPress just to change a blog post.</td></tr>
+        <tr><td class="dont">Don&rsquo;t</td><td>Scrape because time passed. Scrape when the aaPanel edit is ready.</td></tr>
+      </tbody>
+    </table>
+
+    <footer>Pair with the meeting script. Hosts: dev. = aaPanel edits, static. = preview, apex = live.</footer>
+  </div>
+</body>
+</html>

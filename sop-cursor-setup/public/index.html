@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Set up fleet conversion on your PC · CityThrive</title>
+  <title>Set up Cursor for fleet conversion · CityThrive</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Jost:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
@@ -235,18 +235,64 @@
       font-weight: 800;
       font-size: 14px;
     }
-    .pdf-btn {
-      display: inline-block;
-      margin-top: 8px;
-      background: var(--orange);
-      color: #121c1e;
-      border-radius: 999px;
-      padding: 10px 16px;
-      font-weight: 800;
-      font-size: 14px;
-      text-decoration: none;
+
+    .cursor-app {
+      display: grid;
+      grid-template-columns: 168px minmax(0, 1fr);
+      min-height: 280px;
+      margin-top: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      background: #141414;
     }
-    .pdf-btn:hover { filter: brightness(1.05); }
+    .cursor-side {
+      padding: 14px 12px;
+      border-right: 1px solid rgba(255,255,255,0.08);
+      background: #181818;
+      color: #b4b4b4;
+      font-size: 12px;
+    }
+    .cursor-side strong {
+      display: block;
+      margin-bottom: 10px;
+      color: #ececec;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .cursor-side ul { margin: 0; padding: 0; list-style: none; }
+    .cursor-side li { padding: 5px 8px; border-radius: 6px; }
+    .cursor-side li.on { color: #fff; background: rgba(76, 139, 245, 0.22); }
+    .cursor-chat { padding: 14px 16px; display: grid; gap: 10px; align-content: start; }
+    .msg {
+      max-width: 92%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .msg.user { margin-left: auto; color: #f4f7f8; background: #2f67f6; }
+    .msg.bot { color: #d7d7d7; background: #222; }
+    .msg .who {
+      display: block;
+      margin-bottom: 4px;
+      opacity: 0.7;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .composer {
+      margin-top: 4px;
+      padding: 10px 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      color: #9a9a9a;
+      background: #1b1b1b;
+      font-size: 12px;
+    }
 
     .annotation-rail {
       position: sticky;
@@ -412,6 +458,7 @@
       .artifact-shell { grid-template-columns: 1fr; }
       .annotation-rail { position: relative; top: auto; max-height: none; order: -1; }
       .split, .checks { grid-template-columns: 1fr; }
+      .cursor-app { grid-template-columns: 1fr; }
     }
     @media (max-width: 760px) {
       .artifact-header, .artifact-shell { width: min(100% - 20px, 680px); }
@@ -423,319 +470,240 @@
 <body>
   <header class="artifact-header">
     <div>
-      <p class="artifact-eyebrow">CityThrive · Fleet SOP · CT-SOP-FLEET-MACHINE-SETUP · 3 Sep 2026</p>
-      <h1>Set up fleet conversion on your PC</h1>
+      <p class="artifact-eyebrow">CityThrive · Fleet SOP · CT-SOP-FLEET-CURSOR · 3 Sep 2026</p>
+      <h1>Set up Cursor for this process</h1>
     </div>
-    <p class="artifact-meta">This gets the kit onto a new Windows machine. It does not convert a site. Hover a pin for the annotation.</p>
+    <p class="artifact-meta">Open the kit folder in Cursor and ask in chat. This page is the setup. Convert / preview / cutover is a different SOP.</p>
   </header>
 
   <main class="artifact-shell">
     <article class="browser-frame">
       <div class="browser-bar">
         <div class="browser-dots" aria-hidden="true"><span></span><span></span><span></span></div>
-        <div class="browser-url">fleet SOP · unzip kit · recreate junctions · vault token · prove APIs</div>
+        <div class="browser-url">cursor · open shared-apex-static · chat Path A / B / C · never paste .env</div>
         <div></div>
       </div>
 
       <section class="website-section hero" id="s01" data-id="01">
         <button class="pin" type="button" data-id="01" aria-label="Show annotation for purpose">01</button>
-        <p class="kicker">01 · This SOP does not convert a site</p>
-        <h2>Get the kit onto a new Windows PC. Then open the convert SOP.</h2>
-        <p class="plain">GitHub is not required. Never put <code>.env</code> in git, zip, Slack, or chat. Token comes from the vault only.</p>
-        <div class="split">
-          <div class="flow">
-            <span class="chip wp">Copy folders</span>
-            <span class="arrow">→</span>
-            <span class="chip kv">Recreate links</span>
-            <span class="arrow">→</span>
-            <span class="chip">Create .env</span>
-            <span class="arrow">→</span>
-            <span class="chip live">Prove it works</span>
-          </div>
-          <div class="panel">
-            <h3>Printable PDF</h3>
-            <p class="muted" style="margin:0">Same content as this page, for offline / print. After setup, follow Path A / B / C in the convert SOP.</p>
-            <a class="pdf-btn" href="./SOP-MACHINE-SETUP.pdf">Download SOP-MACHINE-SETUP.pdf</a>
+        <p class="kicker">01 · This is not a convert</p>
+        <h2>Cursor is how you ask the SOP. PowerShell is how you run it.</h2>
+        <p class="plain">Use this page after the machine-setup SOP has the kit on the PC. Chat can point at the right path. It does not replace origin-IP scrape, <code>static.*</code> QA, or <code>-IConfirmApexCutover</code>.</p>
+        <div class="cursor-app" aria-label="Example Cursor chat">
+          <aside class="cursor-side">
+            <strong>Explorer</strong>
+            <ul>
+              <li class="on">shared-apex-static</li>
+              <li>docs / SOP-CONVERT…</li>
+              <li>.cursor / rules</li>
+              <li>scripts</li>
+            </ul>
+          </aside>
+          <div class="cursor-chat">
+            <div class="msg user"><span class="who">You</span>This site is already static. WordPress popup changed. coconutcreekfoundationrepair.com. What do I run?</div>
+            <div class="msg bot"><span class="who">Cursor</span>Path B. Scrape WordPress via the hosting IP. Do not scrape public HTTPS — this host already returns <code>x-source: kv</code>.</div>
+            <div class="composer">Ask about Path A, B, or C · @ the SOP · do not paste .env</div>
           </div>
         </div>
       </section>
 
       <section class="website-section" id="s02" data-id="02">
-        <button class="pin" type="button" data-id="02" aria-label="Show annotation for folders">02</button>
-        <p class="kicker">02 · What lives where</p>
-        <h2>Unzip so these five folders sit next to each other under Downloads.</h2>
-        <p class="plain">Inside <code>fleet\</code>, worker / preview / conversion / handoff are links to the real folders, not copies of the code. Do not put a <code>.env</code> in <code>fleet\</code> — each project has its own.</p>
-        <pre>C:\Users\&lt;You&gt;\Downloads\
-  fleet\                   Hub: SOPs, audits, CSVs, form JS. Run from here.
-  shared-apex-static\      Fleet Worker, KV/R2 scrape
-  fleet-static-preview\    static.* preview, DNS, apex cutover
-  static-conversion\       Per-site convert + 26-check audit
-  static-fleet-handoff\    Team SOP copies</pre>
-        <table>
-          <thead><tr><th>Link in fleet\</th><th>Real folder</th></tr></thead>
-          <tbody>
-            <tr><td><code>worker\</code></td><td><code>..\shared-apex-static\</code></td></tr>
-            <tr><td><code>preview\</code></td><td><code>..\fleet-static-preview\</code></td></tr>
-            <tr><td><code>conversion\</code></td><td><code>..\static-conversion\</code></td></tr>
-            <tr><td><code>handoff\</code></td><td><code>..\static-fleet-handoff\</code></td></tr>
-          </tbody>
-        </table>
+        <button class="pin" type="button" data-id="02" aria-label="Show annotation for install">02</button>
+        <p class="kicker">02 · Install Cursor</p>
+        <h2>Install Cursor on this Windows PC. Sign in with your work account.</h2>
+        <p class="plain">You need the desktop app, not only a browser tab of a live SOP. The live HTML pages are for reading. Cursor chat needs the folder on disk.</p>
+        <ol class="steps">
+          <li>Install Cursor from the official download.</li>
+          <li>Sign in.</li>
+          <li>You do not need GitHub for this kit.</li>
+        </ol>
       </section>
 
       <section class="website-section" id="s03" data-id="03">
-        <button class="pin" type="button" data-id="03" aria-label="Show annotation for prerequisites">03</button>
-        <p class="kicker">03 · Prerequisites</p>
-        <h2>Windows, PowerShell, curl, Python, and a vault token. No GitHub, no Node.</h2>
-        <table>
-          <thead><tr><th>Tool</th><th>Required?</th><th>Notes</th></tr></thead>
-          <tbody>
-            <tr><td>Windows 10/11</td><td>Yes</td><td></td></tr>
-            <tr><td>PowerShell 5.1+</td><td>Yes</td><td>Built-in</td></tr>
-            <tr><td><code>curl.exe</code></td><td>Yes</td><td>Built-in on current Windows</td></tr>
-            <tr><td>Python 3.x</td><td>Yes</td><td>26-check / Form QA (<code>requests</code>, <code>openpyxl</code>)</td></tr>
-            <tr><td>Cloudflare API token</td><td>Yes</td><td>From the vault. Never Slack, email, or git</td></tr>
-            <tr><td>Git / GitHub</td><td>No</td><td>Zip or shared drive</td></tr>
-            <tr><td>Node / Wrangler</td><td>No</td><td>Operators use PowerShell + the API token</td></tr>
-          </tbody>
-        </table>
+        <button class="pin" type="button" data-id="03" aria-label="Show annotation for open folder">03</button>
+        <p class="kicker">03 · Open the kit folder</p>
+        <h2>File → Open Folder on <code>shared-apex-static</code>.</h2>
+        <p class="plain">That is the workspace Cursor will search. If you only open a PDF or a live URL, chat will not see the rules or scripts.</p>
         <div class="cmd">
-          <p>Command · check tools</p>
-          <pre>Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
-python --version
-curl.exe --version
-python -m pip install requests openpyxl urllib3</pre>
+          <p>Folder to open</p>
+          <pre>C:\Users\&lt;You&gt;\Downloads\shared-apex-static</pre>
         </div>
+        <p class="muted" style="margin-top:10px">Also fine: open <code>Downloads\fleet</code> if the <code>worker</code> junction points at this repo. Confirm <code>docs\SOP-CONVERT-PREVIEW-CUTOVER-RESCRAPE.md</code> is visible in the file tree.</p>
       </section>
 
       <section class="website-section" id="s04" data-id="04">
-        <button class="pin" type="button" data-id="04" aria-label="Show annotation for copy kit">04</button>
-        <p class="kicker">04 · Copy the kit</p>
-        <h2>Ask the lead for the zip with no .env files, plus the vault item.</h2>
-        <ol class="steps">
-          <li>The zip / shared-drive copy of the five folders (<b>no <code>.env</code> files</b>).</li>
-          <li>Vault item for <code>CLOUDFLARE_API_TOKEN</code> (and DevSecSi key only if you will run old per-site convert).</li>
-          <li>Confirmation that <code>shared-apex-static\reports\fleet-infra.json</code> is in the zip.</li>
-        </ol>
-        <p class="plain">Unzip under <code>C:\Users\&lt;You&gt;\Downloads\</code> so the folder names match this SOP. Do not nest <code>Downloads\fleet\fleet\</code>. If <code>fleet\worker</code> is empty after unzip, the junction did not survive — recreate links in the next step.</p>
+        <button class="pin" type="button" data-id="04" aria-label="Show annotation for rules">04</button>
+        <p class="kicker">04 · Rules load by themselves</p>
+        <h2>You do not paste the SOP into every chat. The folder already teaches Cursor.</h2>
+        <p class="plain">When this repo is the workspace, Cursor applies the fleet rules: WordPress on the hosting IP is source of truth, Batches 1–7 stay on Server 2, new batches use Server 1, Stay-WordPress is Azalea Park only.</p>
+        <table>
+          <thead><tr><th>In the folder</th><th>What it locks</th></tr></thead>
+          <tbody>
+            <tr><td><code>.cursor/rules/</code></td><td>Origin IP scrape, Worker split, convert / preview / cutover / rescrape</td></tr>
+            <tr><td><code>docs/SOP-CONVERT-…</code></td><td>Path A / B / C commands</td></tr>
+            <tr><td><code>docs/SOP-MACHINE-SETUP</code></td><td>Kit, junctions, <code>.env</code></td></tr>
+          </tbody>
+        </table>
       </section>
 
       <section class="website-section" id="s05" data-id="05">
-        <button class="pin" type="button" data-id="05" aria-label="Show annotation for junctions">05</button>
-        <p class="kicker">05 · Recreate the fleet links</p>
-        <h2>Open PowerShell in fleet. This does not need Run as administrator.</h2>
-        <p class="plain">Check: <code>dir worker</code> should show README.md and scripts\ from shared-apex-static, not an empty directory. If you skip the links, run the same scripts from the real folders.</p>
-        <div class="cmd">
-          <p>Command · junctions</p>
-          <pre>cd "C:\Users\&lt;You&gt;\Downloads\fleet"
-
-foreach ($pair in @(
-  @{ Name = 'worker';      Target = '..\shared-apex-static' },
-  @{ Name = 'preview';     Target = '..\fleet-static-preview' },
-  @{ Name = 'conversion';  Target = '..\static-conversion' },
-  @{ Name = 'handoff';     Target = '..\static-fleet-handoff' }
-)) {
-  if (Test-Path -LiteralPath $pair.Name) { cmd /c "rmdir `"$($pair.Name)`"" }
-  New-Item -ItemType Junction -Path $pair.Name -Target (Resolve-Path $pair.Target) | Out-Null
-  Write-Output ("OK {0} -> {1}" -f $pair.Name, (Resolve-Path $pair.Target))
-}</pre>
+        <button class="pin" type="button" data-id="05" aria-label="Show annotation for chat vs agent">05</button>
+        <p class="kicker">05 · Chat vs Agent</p>
+        <h2>Ask in Chat to learn the path. Use Agent when you want Cursor to inspect files or draft a command.</h2>
+        <div class="split">
+          <div class="panel">
+            <h3>Chat</h3>
+            <p class="muted" style="margin:0">“Which path for this domain?” “Is Round Rock stay-WordPress?” Good for read-only answers.</p>
+          </div>
+          <div class="panel">
+            <h3>Agent</h3>
+            <p class="muted" style="margin:0">“Show me the preview command for a new-batch domain.” It can open the SOP and scripts. You still run PowerShell yourself unless you asked it to run it.</p>
+          </div>
         </div>
       </section>
 
       <section class="website-section" id="s06" data-id="06">
-        <button class="pin" type="button" data-id="06" aria-label="Show annotation for env files">06</button>
-        <p class="kicker">06 · Create .env in each project</p>
-        <h2>Paste the vault token into worker, preview, and conversion. Leave the rest as in .env.example.</h2>
-        <p class="plain">Token needs: Workers Scripts, KV, R2, Zone DNS (read), Zone Workers Routes, Zone Cache Purge, Zone WAF. Same Cloudflare account the live fleet already uses. Fleet infra is already live — do not re-provision unless <code>reports\fleet-infra.json</code> is missing.</p>
-        <div class="cmd">
-          <p>A · shared-apex-static (fleet\worker)</p>
-          <pre>cd "C:\Users\&lt;You&gt;\Downloads\shared-apex-static"
-Copy-Item .env.example .env
-notepad .env</pre>
+        <button class="pin" type="button" data-id="06" aria-label="Show annotation for at-mention">06</button>
+        <p class="kicker">06 · Point at a file</p>
+        <h2>Type <code>@</code> and pick the SOP if the answer must stay on that document.</h2>
+        <p class="plain">Useful files: <code>SOP-CONVERT-PREVIEW-CUTOVER-RESCRAPE.md</code>, <code>SOP-MACHINE-SETUP.md</code>, <code>HANDOFF.md</code>. You can also paste a live docs URL. The folder is still stronger than a URL alone.</p>
+        <div class="flow">
+          <span class="chip">@ convert SOP</span>
+          <span class="arrow">→</span>
+          <span class="chip kv">Ask Path B</span>
+          <span class="arrow">→</span>
+          <span class="chip live">Run the command in PowerShell</span>
         </div>
-        <div class="cmd">
-          <p>B · fleet-static-preview (fleet\preview)</p>
-          <pre>cd "C:\Users\&lt;You&gt;\Downloads\fleet-static-preview"
-Copy-Item .env.example .env</pre>
-        </div>
-        <p class="muted">Paste the same token. Add Server 1 origin if missing: <code>HOSTING_IP_S1=165.140.157.43</code>.</p>
-        <div class="cmd">
-          <p>C · static-conversion (fleet\conversion)</p>
-          <pre>cd "C:\Users\&lt;You&gt;\Downloads\static-conversion"
-Copy-Item .env.example .env
-.\Invoke-TestApis.ps1</pre>
-        </div>
-        <p class="muted">Fill DevSecSi only if you will call Adam’s provision API. Fleet preview / cutover / origin-IP rescrape do not need it. If TestApis fails, stop and fix the token with the lead.</p>
       </section>
 
       <section class="website-section" id="s07" data-id="07">
-        <button class="pin" type="button" data-id="07" aria-label="Show annotation for constants">07</button>
-        <p class="kicker">07 · Constants</p>
-        <h2>Two origin IPs, two Workers, one skip domain.</h2>
-        <p class="plain">Do not move Batches 1–7 live apex onto <code>fleet-static-worker-server-1</code>. Stay-WordPress is Azalea Park only — Round Rock, Savannah, and Lake Worth convert like everyone else.</p>
-        <table>
-          <thead><tr><th>Name</th><th>Value</th></tr></thead>
-          <tbody>
-            <tr><td>Server 2 origin (Batches 1–7 live apex)</td><td><code>174.136.29.214</code> → <code>fleet-static-worker</code></td></tr>
-            <tr><td>Server 1 origin (new batches)</td><td><code>165.140.157.43</code> → <code>fleet-static-worker-server-1</code></td></tr>
-            <tr><td>Shared KV / R2</td><td><code>HTML_FLEET</code> / <code>fleet-static-assets</code></td></tr>
-            <tr><td>Form JS (fleet inject)</td><td><code>C:\Users\&lt;You&gt;\Downloads\fleet\assets\form-validation.js</code></td></tr>
-            <tr><td>Stay-WordPress (never convert)</td><td><span class="skip">azaleaparkfoundationrepair.com</span></td></tr>
-          </tbody>
-        </table>
+        <button class="pin" type="button" data-id="07" aria-label="Show annotation for prompts">07</button>
+        <p class="kicker">07 · Prompts that work</p>
+        <h2>Name the domain, the current state, and what you are not doing.</h2>
+        <div class="cmd">
+          <p>New convert · apex still WordPress</p>
+          <pre>Path A only for example.com. Apex is still WordPress. Preview on static.* . Do not cut over.</pre>
+        </div>
+        <div class="cmd">
+          <p>Already fleet · WordPress popup changed</p>
+          <pre>example.com is already static (x-source: kv). WP popup changed. Path B via hosting IP. Do not scrape public HTTPS.</pre>
+        </div>
+        <div class="cmd">
+          <p>Need wp-admin on a live fleet site</p>
+          <pre>Need to edit example.com in WordPress. Walk Path C. Keep KV and R2. Do not type into KV.</pre>
+        </div>
       </section>
 
       <section class="website-section" id="s08" data-id="08">
-        <button class="pin" type="button" data-id="08" aria-label="Show annotation for prove it">08</button>
-        <p class="kicker">08 · Prove the machine works</p>
-        <h2>All Test-Path checks True. Cloudflare probe returns True. Token is never printed.</h2>
-        <div class="cmd">
-          <p>From Downloads\fleet</p>
-          <pre>Test-Path .\worker\.env
-Test-Path .\preview\.env
-Test-Path .\conversion\.env
-Test-Path .\worker\reports\fleet-infra.json
-Test-Path .\assets\form-validation.js
-Test-Path .\SOP-CONVERT-PREVIEW-CUTOVER-RESCRAPE.html</pre>
-        </div>
-        <div class="cmd">
-          <p>Cloudflare token (does not print the secret)</p>
-          <pre>cd "C:\Users\&lt;You&gt;\Downloads\shared-apex-static"
-$tok = (Get-Content .env | Where-Object { $_ -match '^CLOUDFLARE_API_TOKEN=' }) -replace '^CLOUDFLARE_API_TOKEN=',''
-$h = @{ Authorization = "Bearer $tok" }
-(Invoke-RestMethod -Uri "https://api.cloudflare.com/client/v4/accounts/f215f8ca79dd9d53b04618556593a581/workers/scripts/fleet-static-worker" -Headers $h).success</pre>
-        </div>
+        <button class="pin" type="button" data-id="08" aria-label="Show annotation for live docs">08</button>
+        <p class="kicker">08 · Live docs you can paste</p>
+        <h2>The same kit is on workers.dev if someone does not have Cursor yet.</h2>
+        <ul class="checks">
+          <li><a href="https://conversion-process-guide.michael-215.workers.dev/">Conversion process guide</a></li>
+          <li><a href="https://sop-convert-preview-cutover-rescrape.michael-215.workers.dev/">Convert / preview / cutover SOP</a></li>
+          <li><a href="https://sop-machine-setup.michael-215.workers.dev/">Machine setup SOP</a></li>
+          <li>This page · Cursor setup</li>
+        </ul>
       </section>
 
       <section class="website-section" id="s09" data-id="09">
-        <button class="pin" type="button" data-id="09" aria-label="Show annotation for run jobs">09</button>
-        <p class="kicker">09 · How you run jobs after setup</p>
-        <h2>Always start in Downloads\fleet. Domain lists go in fleet\sites\.</h2>
-        <p class="plain">Full steps, origin-IP rules, and cutover flags are in the convert SOP — not here. Copy finished spreadsheets into <code>fleet\audits\</code>.</p>
-        <div class="cmd">
-          <p>Examples</p>
-          <pre>cd "C:\Users\&lt;You&gt;\Downloads\fleet\preview"
-powershell -ExecutionPolicy Bypass -File .\scripts\Invoke-PreviewStaticOnFleet.ps1 `
-  -SitesCsv .\sites\YOUR.csv -OriginIp 174.136.29.214 -WorkerName fleet-static-worker
-
-cd "C:\Users\&lt;You&gt;\Downloads\fleet\worker"
-powershell -ExecutionPolicy Bypass -File .\scripts\Invoke-WpOriginToFleet.ps1 `
-  -SitesCsv .\reports\YOUR.csv -HostingIp 174.136.29.214 -SkipRoutes -SkipAssets</pre>
-        </div>
+        <button class="pin" type="button" data-id="09" aria-label="Show annotation for secrets">09</button>
+        <p class="kicker">09 · Secrets</p>
+        <h2>Never paste <code>.env</code>, the Cloudflare token, or vault items into chat.</h2>
+        <p class="plain">Cursor can read <code>.env</code> from disk if it is in the workspace. Do not put the token in the prompt, Slack, or email. If chat asks for the token, stop and use the vault on the PC instead.</p>
+        <p class="skip">Do not paste CLOUDFLARE_API_TOKEN into Cursor</p>
       </section>
 
       <section class="website-section" id="s10" data-id="10">
-        <button class="pin" type="button" data-id="10" aria-label="Show annotation for convert SOP">10</button>
-        <p class="kicker">10 · Then read the operating SOP</p>
-        <h2>Do not convert or cut over apex until Path A / B / C is clear.</h2>
-        <p class="plain">First real job: one non-critical domain, <code>static.*</code> only. Apex cutover requires <code>-IConfirmApexCutover</code>.</p>
-        <ul class="checks">
-          <li>Path A — new convert → static.* → apex</li>
-          <li>Path B — rescrape via hosting IP</li>
-          <li>Path C — rollback to WordPress, edit, rescrape</li>
-          <li>Form-validation inject after every HTML scrape</li>
-          <li>Stay-WordPress = Azalea Park only</li>
-        </ul>
-        <p class="muted" style="margin-top:12px">Live convert SOP: <a href="https://sop-convert-preview-cutover-rescrape.michael-215.workers.dev/">sop-convert-preview-cutover-rescrape.michael-215.workers.dev</a></p>
-      </section>
-
-      <section class="website-section" id="s11" data-id="11">
-        <button class="pin" type="button" data-id="11" aria-label="Show annotation for do not">11</button>
-        <p class="kicker">11 · Don't do these</p>
-        <h2>The token never leaves the vault. Fleet infra is already live.</h2>
+        <button class="pin" type="button" data-id="10" aria-label="Show annotation for do not">10</button>
+        <p class="kicker">10 · Don't do these</p>
+        <h2>Chat is not permission to skip QA or scrape the public fleet URL.</h2>
         <table>
           <thead><tr><th>Don't</th><th>Why</th></tr></thead>
           <tbody>
-            <tr><td>Commit or zip <code>.env</code></td><td>Token in git / shared drive</td></tr>
-            <tr><td>Paste the token into chat</td><td>Vault only</td></tr>
-            <tr><td>Re-provision fleet “to be safe”</td><td>Infra is already live; you can overwrite routes</td></tr>
-            <tr><td>Skip Stay-WordPress</td><td>Never convert Azalea Park</td></tr>
-            <tr><td>Scrape public HTTPS on a live fleet site</td><td>Recopies stale KV</td></tr>
-            <tr><td>Use <code>Downloads\form-validation.js</code></td><td>Missing popup listeners; use <code>fleet\assets\</code></td></tr>
-            <tr><td>Omit <code>workerName</code> on a new-batch Adam scrape</td><td>Lands <code>static.*</code> on Server 2</td></tr>
-            <tr><td>Cut over apex without <code>-IConfirmApexCutover</code></td><td>Script will refuse; that is intentional</td></tr>
+            <tr><td>Open only the live HTML page and expect Cursor to “be” the SOP</td><td>Rules live in the folder</td></tr>
+            <tr><td>Ask it to scrape a host that already returns <code>x-source: kv</code></td><td>That recopies stale static</td></tr>
+            <tr><td>Ask it to cut over apex without <code>-IConfirmApexCutover</code></td><td>Preview until Sean signs off</td></tr>
+            <tr><td>Treat Round Rock / Savannah / Lake Worth as skip sites</td><td>Stay-WordPress is Azalea only</td></tr>
+            <tr><td>Omit <code>workerName</code> on a new-batch Adam scrape</td><td>It would land on Server 2</td></tr>
           </tbody>
         </table>
       </section>
 
-      <section class="website-section" id="s12" data-id="12">
-        <button class="pin" type="button" data-id="12" aria-label="Show annotation for checklist">12</button>
-        <p class="kicker">12 · Setup checklist</p>
-        <h2>Tick these before your first real job</h2>
+      <section class="website-section" id="s11" data-id="11">
+        <button class="pin" type="button" data-id="11" aria-label="Show annotation for checklist">11</button>
+        <p class="kicker">11 · Cursor checklist</p>
+        <h2>Tick these before you trust chat on a real domain</h2>
         <ul class="checks">
-          <li>Five folders under Downloads\ with the names in section 02</li>
-          <li>fleet\worker, preview, conversion, handoff point at the real projects</li>
-          <li>.env in worker, preview, conversion — token from vault</li>
-          <li>python --version and curl.exe --version work</li>
-          <li>Invoke-TestApis.ps1 green if you will use conversion</li>
-          <li>Cloudflare Workers script probe returns True</li>
-          <li>fleet-infra.json and fleet\assets\form-validation.js exist</li>
-          <li>Convert SOP opens (HTML live URL or fleet HTML/PDF)</li>
-          <li>No .env in the zip you send the next person</li>
+          <li>Machine-setup SOP already done on this PC</li>
+          <li>Cursor Open Folder = <code>shared-apex-static</code></li>
+          <li>File tree shows <code>docs\</code> and <code>.cursor\rules</code></li>
+          <li>First ask is a dry question, not a live cutover</li>
+          <li>Token never appeared in the prompt</li>
+          <li>Commands still run from <code>Downloads\fleet</code></li>
         </ul>
       </section>
     </article>
 
-    <aside class="annotation-rail" aria-label="Setup annotations">
+    <aside class="annotation-rail" aria-label="Cursor setup annotations">
       <div class="rail-head">
         <p class="rail-kicker">Interactive anatomy</p>
-        <h2>Why each setup step earns its place</h2>
-        <p class="rail-intro">Choose an analysis mode. Hover a pin, timeline row, or note for an instant callout. Click to keep it open.</p>
+        <h2>Why Cursor setup sits beside the convert SOP</h2>
+        <p class="rail-intro">Choose a mode. Hover a pin or timeline row. Click to keep it open.</p>
         <div class="mode-tabs" role="tablist" aria-label="Annotation mode">
           <button class="mode-button" type="button" role="tab" data-mode="process" aria-selected="true">What to do</button>
-          <button class="mode-button" type="button" role="tab" data-mode="secrets" aria-selected="false">Secrets</button>
+          <button class="mode-button" type="button" role="tab" data-mode="prompts" aria-selected="false">Prompts</button>
           <button class="mode-button" type="button" role="tab" data-mode="guardrails" aria-selected="false">Don't do this</button>
         </div>
         <div class="structure-panel">
           <div class="structure-panel-head">
             <strong>Page structure</strong>
-            <span class="structure-count" id="structure-count">01 / 12</span>
+            <span class="structure-count" id="structure-count">01 / 11</span>
           </div>
           <ol class="structure-table" id="rail"></ol>
         </div>
       </div>
       <div class="notes-label"><span>Mode notes</span><span>Hover for annotation · Click to pin</span></div>
       <ol class="annotation-list" id="notes"></ol>
-      <p class="rail-foot">Live: <a href="https://sop-machine-setup.michael-215.workers.dev/">sop-machine-setup.michael-215.workers.dev</a> · PDF: <a href="./SOP-MACHINE-SETUP.pdf">SOP-MACHINE-SETUP.pdf</a> · Cursor: <a href="https://sop-cursor-setup.michael-215.workers.dev/">sop-cursor-setup</a></p>
+      <p class="rail-foot">Live: <a href="https://sop-cursor-setup.michael-215.workers.dev/">sop-cursor-setup.michael-215.workers.dev</a>. Companion: <a href="https://sop-machine-setup.michael-215.workers.dev/">machine setup</a> · <a href="https://sop-convert-preview-cutover-rescrape.michael-215.workers.dev/">convert SOP</a>.</p>
     </aside>
   </main>
 
   <script>
     const RAIL = [
       ["01", "Not a convert", "Lock"],
-      ["02", "Five folders", "Kit"],
-      ["03", "Prerequisites", "Tools"],
-      ["04", "Copy the kit", "Unzip"],
-      ["05", "Recreate links", "Junction"],
-      ["06", "Create .env", "Token"],
-      ["07", "Constants", "Lane"],
-      ["08", "Prove it works", "Prove"],
-      ["09", "Run jobs", "Ops"],
-      ["10", "Then convert SOP", "Read"],
-      ["11", "Don't do these", "Guard"],
-      ["12", "Setup checklist", "Ship"]
+      ["02", "Install Cursor", "App"],
+      ["03", "Open the folder", "Workspace"],
+      ["04", "Rules auto-load", "Rules"],
+      ["05", "Chat vs Agent", "Mode"],
+      ["06", "@ the SOP", "Context"],
+      ["07", "Example prompts", "Ask"],
+      ["08", "Live docs", "Links"],
+      ["09", "Never paste .env", "Vault"],
+      ["10", "Don't do these", "Guard"],
+      ["11", "Cursor checklist", "Ship"]
     ];
 
     const WHY = {
       process: [
-        ["01", "Setup first, convert later", "This page only gets the kit onto a PC. Path A / B / C live in the convert SOP.", "Order"],
-        ["02", "Links, not copies", "fleet\\worker opens shared-apex-static. If the junction breaks, scripts look empty.", "Hub"],
-        ["05", "Junctions rarely survive zip", "Empty fleet\\worker after unzip is expected. Recreate links before you panic.", "Repair"],
-        ["06", "Three .env files", "Worker, preview, and conversion each need the vault token. fleet\\ itself has none.", "Per project"],
-        ["10", "First job is preview-only", "One non-critical domain on static.* until the convert SOP is clear.", "First job"]
+        ["01", "Chat points, PowerShell runs", "Cursor will not replace origin-IP scrape or the cutover flag.", "Split jobs"],
+        ["03", "Folder is the product", "Open shared-apex-static. A workers.dev tab is only a reader.", "Workspace"],
+        ["04", "Rules already know the split", "B1–7 on Server 2. New batches on Server 1. Azalea only skip.", "Auto rules"],
+        ["05", "Agent can open files", "You still confirm before a live route change.", "Human gate"],
+        ["11", "Dry ask first", "Prove chat names Path A/B/C before a real domain.", "First ask"]
       ],
-      secrets: [
-        ["01", "Token never in the zip", "Ask the lead for the vault item separately. Do not Slack, email, or git the secret.", "Vault only"],
-        ["04", "No .env in the kit", "The five folders ship without secrets. You recreate .env from .env.example.", "Clean zip"],
-        ["06", "Same token, three files", "Leave account id, IPs, Worker / KV / R2 names as in .env.example.", "Paste once"],
-        ["08", "Probe without printing", "The Workers script GET returns True/False. Do not Write-Output the token.", "No leak"],
-        ["12", "Next person gets a clean zip", "If .env is in the zip you send, the token leaked.", "Handoff"]
+      prompts: [
+        ["07", "State the host", "Say if apex is WordPress or already kv. Name the domain.", "Be specific"],
+        ["07", "Say what not to do", "“Do not cut over” and “do not scrape public HTTPS” keep it safe.", "Guard in prompt"],
+        ["06", "@ when it must match the SOP", "Pin Path B to the convert SOP so it cannot invent a migrate script.", "Pin the file"],
+        ["01", "Use a real example", "coconutcreekfoundationrepair.com is already fleet. Path B, not Path A.", "Worked example"]
       ],
       guardrails: [
-        ["01", "Do not convert from this SOP", "Setup checklist first. Apex cutover is a different document.", "Wrong SOP"],
-        ["06", "Do not re-provision fleet", "Infra is already live. Invoke-ProvisionFleet can overwrite routes.", "Don't reprovision"],
-        ["07", "Azalea only", "Round Rock, Savannah, and Lake Worth are not skip sites.", "Skip list"],
-        ["11", "New batch must send workerName", "Otherwise Adam attaches static.* to Server 2.", "Adam"],
-        ["11", "Never scrape public HTTPS on fleet", "x-source: kv means you would recopy stale static.", "Origin IP"]
+        ["09", "Token never in the prompt", "Vault on the PC. Not Slack, not email, not chat.", "No leak"],
+        ["10", "kv URL is not origin", "Public HTTPS on fleet recopies last week’s snapshot.", "Origin IP"],
+        ["10", "Azalea only", "Round Rock, Savannah, and Lake Worth convert.", "Skip list"],
+        ["10", "New batch needs workerName", "Otherwise Adam attaches static.* to Server 2.", "Adam"],
+        ["01", "This page does not convert", "Machine setup, then convert SOP. Cursor is the helper.", "Wrong SOP"]
       ]
     };
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Convert, preview, cutover, rescrape SOP · CityThrive</title>
+  <title>Fleet conversion process guide · CityThrive</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Jost:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
@@ -224,21 +224,16 @@
       line-height: 1.45;
     }
 
+    .hosts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+    .host { background: #f7f9f9; border: 1px solid rgba(19, 43, 52, 0.1); border-radius: 12px; padding: 14px; }
+    .host code { display: block; font-weight: 700; margin-bottom: 6px; }
+    .host p { margin: 0; font-size: 14px; color: var(--muted); }
     ol.steps { margin: 8px 0 0; padding-left: 18px; color: var(--muted); font-size: 14px; }
     ol.steps li { margin: 4px 0; }
     .skip {
       display: inline-block;
       background: #fde8eb;
       color: var(--fail);
-      border-radius: 999px;
-      padding: 8px 14px;
-      font-weight: 800;
-      font-size: 14px;
-    }
-    .ok-pill {
-      display: inline-block;
-      background: #e7f7f3;
-      color: var(--kv);
       border-radius: 999px;
       padding: 8px 14px;
       font-weight: 800;
@@ -408,7 +403,7 @@
       .artifact-meta { text-align: left; }
       .artifact-shell { grid-template-columns: 1fr; }
       .annotation-rail { position: relative; top: auto; max-height: none; order: -1; }
-      .split, .checks { grid-template-columns: 1fr; }
+      .split, .checks, .hosts { grid-template-columns: 1fr; }
     }
     @media (max-width: 760px) {
       .artifact-header, .artifact-shell { width: min(100% - 20px, 680px); }
@@ -420,141 +415,145 @@
 <body>
   <header class="artifact-header">
     <div>
-      <p class="artifact-eyebrow">CityThrive · Fleet SOP · CT-SOP-FLEET-CONVERT · 3 Sep 2026</p>
-      <h1>Convert, preview, cutover, rescrape</h1>
+      <p class="artifact-eyebrow">CityThrive · Fleet static operations · 3 Sep 2026</p>
+      <h1>Fleet conversion process guide</h1>
     </div>
-    <p class="artifact-meta">Hover a numbered pin or timeline row to reveal its annotation. The rail tracks the stage currently in view.</p>
+    <p class="artifact-meta">Hover a numbered pin or timeline row to reveal its annotation. The parallel structure rail tracks the stage currently in view.</p>
   </header>
 
   <main class="artifact-shell">
     <article class="browser-frame">
       <div class="browser-bar">
         <div class="browser-dots" aria-hidden="true"><span></span><span></span><span></span></div>
-        <div class="browser-url">fleet SOP · Path A preview · Path B origin-IP rescrape · Path C edit loop</div>
+        <div class="browser-url">fleet / convert · preview static.* · apex cutover · origin-IP rescrape</div>
         <div></div>
       </div>
 
       <section class="website-section hero" id="s01" data-id="01">
-        <button class="pin" type="button" data-id="01" aria-label="Show annotation for purpose">01</button>
-        <p class="kicker">01 · Three jobs, one SOP</p>
-        <h2>WordPress on the hosting IP is the source of truth. Static is a snapshot.</h2>
-        <p class="plain">Use this SOP for new converts, refreshes, and the edit loop. Never scrape public HTTPS on a host that already returns <code>x-source: kv</code> — that recopies stale static, including old popups.</p>
+        <button class="pin" type="button" data-id="01" aria-label="Show annotation for source of truth">01</button>
+        <p class="kicker">01 · WordPress first</p>
+        <h2>Always copy from live WordPress — never from the public static site</h2>
+        <p class="plain">If the live site is already static, scraping the public URL recopies last week’s snapshot, including old popups. Scrape the hosting IP instead, where WordPress still lives.</p>
         <div class="split">
           <div class="flow">
-            <span class="chip wp">New convert</span>
+            <span class="chip wp">WordPress · origin IP</span>
             <span class="arrow">→</span>
-            <span class="chip kv">Rescrape</span>
+            <span class="chip kv">HTML_FLEET + R2</span>
             <span class="arrow">→</span>
-            <span class="chip live">Edit loop</span>
+            <span class="chip live">Visitor sees fleet</span>
           </div>
           <div class="panel">
-            <h3>What static is</h3>
-            <p class="muted" style="margin:0">HTML, CSS, JS, images, robots, sitemaps. Not WordPress. PHP and Elementor do not run on Cloudflare. The page can still look like WordPress — that is expected.</p>
+            <h3>How you know the live site is fleet</h3>
+            <p class="muted" style="margin:0">HTTP 200 · <code>x-source: kv</code> · <code>x-fleet-host: domain</code></p>
+            <p class="muted" style="margin:8px 0 0">kv without x-fleet-host is the old per-site Worker.</p>
           </div>
         </div>
       </section>
 
       <section class="website-section" id="s02" data-id="02">
-        <button class="pin" type="button" data-id="02" aria-label="Show annotation for architecture">02</button>
-        <p class="kicker">02 · Architecture</p>
-        <h2>Two Workers share one KV and one R2. Each domain has its own key prefix.</h2>
-        <p class="plain">Batches 1–7 live apex stay on Server 2. Newer sites go on Server 1. Do not move a B1–7 live site onto Server 1. Sites do not share HTML or <code>wp-content</code>.</p>
-        <pre>Visitor request
-        │
-        ▼
-  fleet-static-worker              Batches 1–7 live apex
-  fleet-static-worker-server-1     New batches after B1–7
-        │
-        ├── HTML_FLEET (KV)              {host}:html:{path}
-        └── fleet-static-assets (R2)     {host}:asset:{path}
-
-Preview keys use static.{domain}:html:… and static.{domain}:asset:…</pre>
-        <p class="muted" style="margin-top:12px">Proof the public host is on fleet: HTTP 200 · <code>x-source: kv</code> · <code>x-fleet-host: example.com</code>. kv without x-fleet-host is the old per-site Worker — treat that as not on fleet.</p>
+        <button class="pin" type="button" data-id="02" aria-label="Show annotation for workers">02</button>
+        <p class="kicker">02 · Which server</p>
+        <h2>Two Workers, one KV, one R2</h2>
+        <p class="plain">Batches 1–7 stay on Server 2. Newer sites go on Server 1. Both share the same storage. Do not move a B1–7 live site onto Server 1.</p>
+        <table>
+          <thead><tr><th>If the site is…</th><th>Worker</th><th>Origin IP</th></tr></thead>
+          <tbody>
+            <tr><td>Batches 1–7 live apex</td><td><code>fleet-static-worker</code></td><td><code>174.136.29.214</code></td></tr>
+            <tr><td>A newer batch</td><td><code>fleet-static-worker-server-1</code></td><td><code>165.140.157.43</code></td></tr>
+          </tbody>
+        </table>
+        <p class="muted" style="margin-top:10px">Keys: <code>{host}:html:{path}</code> and <code>{host}:asset:{path}</code>. Preview uses <code>static.{domain}:…</code>.</p>
       </section>
 
       <section class="website-section" id="s03" data-id="03">
-        <button class="pin" type="button" data-id="03" aria-label="Show annotation for origin IPs">03</button>
-        <p class="kicker">03 · Which server</p>
-        <h2>Pick the origin IP from the lane. If this PC cannot reach it, stop.</h2>
-        <p class="plain">Fetch origin with <code>curl --resolve {domain}:443:{origin-ip}</code> (and www). Do not fall back to public HTTPS on a fleet site.</p>
-        <table>
-          <thead><tr><th>Lane</th><th>Worker</th><th>WordPress origin IP</th><th>Use for</th></tr></thead>
-          <tbody>
-            <tr><td>Server 2</td><td><code>fleet-static-worker</code></td><td><code>174.136.29.214</code></td><td>Batches 1–7 live apex</td></tr>
-            <tr><td>Server 1</td><td><code>fleet-static-worker-server-1</code></td><td><code>165.140.157.43</code></td><td>New batches after B1–7</td></tr>
-          </tbody>
-        </table>
+        <button class="pin" type="button" data-id="03" aria-label="Show annotation for preview">03</button>
+        <p class="kicker">03 · Make a preview</p>
+        <h2>Build static.domain.com. Leave client.com on WordPress.</h2>
+        <p class="plain">A new convert never jumps straight to the live domain. QA looks at the preview first. Adam’s provision API is the same idea: preview only, no apex switch.</p>
+        <div class="flow">
+          <span class="chip wp">Live WordPress</span>
+          <span class="arrow">→</span>
+          <span class="chip kv">Scrape via origin IP</span>
+          <span class="arrow">→</span>
+          <span class="chip">Preview on static.</span>
+          <span class="arrow">→</span>
+          <span class="chip live">Live domain after QA</span>
+        </div>
+        <ul class="checks">
+          <li>Stay-WP skip checked · WPVivid backup</li>
+          <li>Attach only <code>static.{domain}/*</code></li>
+          <li>Adam <code>/provision-originless</code> is preview-only</li>
+          <li>Live switch needs <code>-IConfirmApexCutover</code></li>
+        </ul>
+        <div class="cmd">
+          <p>Command · Server 2 preview</p>
+          <pre>cd fleet\preview
+powershell -File .\scripts\Invoke-PreviewStaticOnFleet.ps1 -SitesCsv .\sites\YOUR.csv -OriginIp 174.136.29.214 -WorkerName fleet-static-worker
+# Server 1: -OriginIp 165.140.157.43 -WorkerName fleet-static-worker-server-1</pre>
+        </div>
       </section>
 
       <section class="website-section" id="s04" data-id="04">
-        <button class="pin" type="button" data-id="04" aria-label="Show annotation for Path A">04</button>
-        <p class="kicker">04 · Path A · New convert</p>
-        <h2>Build static.domain.com. Leave the live domain on WordPress until QA signs off.</h2>
-        <p class="plain">A new convert never jumps straight to client.com. Adam’s provision API is preview only — it does not take an origin IP and does not touch apex/www.</p>
-        <ol class="steps">
-          <li>Confirm the domain is not stay-WordPress. Take a WPVivid backup. Fix pages, forms, and CallRail on live WordPress.</li>
-          <li>Scrape WordPress via the correct origin IP into HTML_FLEET + fleet-static-assets.</li>
-          <li>Attach <code>static.{domain}/*</code> only. Apex and www stay on WordPress.</li>
-          <li>QA the preview against live WP: eyeball, 26-check, forms, images, CallRail.</li>
-          <li>After sign-off, cut over apex + www to the same fleet Worker (<code>-IConfirmApexCutover</code>).</li>
-          <li>Inject <code>form-validation.js</code>. Origin WP never includes this tag.</li>
-          <li>Verify live: 200, <code>x-source: kv</code>, <code>x-fleet-host</code>, <code>/form-validation.js</code> HTTP 200.</li>
-        </ol>
-        <div class="cmd">
-          <p>Command · preview only (Server 2)</p>
-          <pre>cd "C:\Users\&lt;You&gt;\Downloads\fleet-static-preview"
-
-powershell -ExecutionPolicy Bypass -File .\scripts\Invoke-PreviewStaticOnFleet.ps1 `
-  -SitesCsv .\sites\YOUR.csv `
-  -OriginIp 174.136.29.214 `
-  -WorkerName fleet-static-worker
-
-# Server 1: -OriginIp 165.140.157.43 -WorkerName fleet-static-worker-server-1</pre>
-        </div>
-        <div class="cmd">
-          <p>Command · after QA</p>
-          <pre>powershell -ExecutionPolicy Bypass -File .\scripts\Invoke-CutoverApexToFleet.ps1 `
-  -SitesCsv .\sites\YOUR.csv -IConfirmApexCutover
-
-powershell -ExecutionPolicy Bypass -File .\scripts\Invoke-InjectFleetFormValidation.ps1 `
-  -SitesCsv .\sites\YOUR.csv</pre>
-        </div>
-        <p class="muted" style="margin-top:12px">Adam <code>POST …/provision-originless</code> and <code>/scrape</code> with <code>"fleet": true</code> attach preview only. Omit <code>workerName</code> only for Batches 1–7. New batches must send <code>"workerName":"fleet-static-worker-server-1"</code>.</p>
+        <button class="pin" type="button" data-id="04" aria-label="Show annotation for QA">04</button>
+        <p class="kicker">04 · Check the preview</p>
+        <h2>Compare the clone to WordPress, not to an old copy</h2>
+        <p class="plain">A green terminal is not QA. Sean looks at the preview next to live WordPress. If logo, theme, forms, or popup are wrong, fix WP or rescrape — do not cut over.</p>
+        <ul class="checks">
+          <li>Homepage, inner pages, popup</li>
+          <li>26-check portfolio audit</li>
+          <li>Images, CSS, and JS from R2</li>
+          <li>Forms and CallRail match origin WP</li>
+        </ul>
       </section>
 
       <section class="website-section" id="s05" data-id="05">
-        <button class="pin" type="button" data-id="05" aria-label="Show annotation for Path B">05</button>
-        <p class="kicker">05 · Path B · Rescrape</p>
-        <h2>Already static? Recopy WordPress through the hosting IP — not public HTTPS.</h2>
-        <p class="plain">Use this when WordPress already has the correct content (popups, copy, pages) and the public site is, or will be, fleet.</p>
-        <table>
-          <thead><tr><th>Change type</th><th>Scrape mode</th><th>Routes</th></tr></thead>
-          <tbody>
-            <tr><td>HTML, popup, or copy only</td><td>HTML-only (<code>-SkipAssets</code>), then inject form-validation</td><td><code>-SkipRoutes</code> if apex is already fleet</td></tr>
-            <tr><td>Theme, CSS, JS, or media</td><td>Full HTML + R2, then inject form-validation</td><td>Same</td></tr>
-            <tr><td>Apex not on fleet yet</td><td>Scrape into fleet KV/R2 first</td><td>Cut over apex only after QA (Path A)</td></tr>
-          </tbody>
-        </table>
+        <button class="pin" type="button" data-id="05" aria-label="Show annotation for cutover">05</button>
+        <p class="kicker">05 · Switch the live site</p>
+        <h2>Same Worker. Apex + www. Keep the old Worker 48 hours.</h2>
+        <p class="plain">Content is already in KV/R2. Cutover is a route change, so it can roll back. Adam never switches the live domain — we do.</p>
         <div class="cmd">
-          <p>Command · HTML-only refresh</p>
-          <pre>cd "C:\Users\&lt;You&gt;\Downloads\shared-apex-static"
-
-powershell -ExecutionPolicy Bypass -File .\scripts\Invoke-WpOriginToFleet.ps1 `
-  -SitesCsv .\reports\YOUR.csv `
-  -HostingIp 174.136.29.214 `
-  -WorkerName fleet-static-worker `
-  -SkipRoutes -SkipAssets
-
-# Server 1: -HostingIp 165.140.157.43 -WorkerName fleet-static-worker-server-1</pre>
+          <p>Command · apex cutover</p>
+          <pre>powershell -File .\scripts\Invoke-CutoverApexToFleet.ps1 -SitesCsv .\sites\YOUR.csv -IConfirmApexCutover</pre>
         </div>
-        <p class="muted" style="margin-top:12px">After every HTML scrape, re-inject <code>/form-validation.js</code>. The WordPress snapshot never contains the fleet snippet.</p>
       </section>
 
       <section class="website-section" id="s06" data-id="06">
-        <button class="pin" type="button" data-id="06" aria-label="Show annotation for Path C">06</button>
-        <p class="kicker">06 · Path C · Edit loop</p>
+        <button class="pin" type="button" data-id="06" aria-label="Show annotation for forms">06</button>
+        <p class="kicker">06 · Add form checks</p>
+        <h2>WordPress never includes our fleet script. Inject it after every HTML scrape.</h2>
+        <p class="plain">Usman covers remaining WordPress. John injects on fleet/static. Use <code>fleet\assets\</code> — not the old Downloads copy.</p>
+        <table>
+          <thead><tr><th>Kind of site</th><th>Who</th><th>File</th></tr></thead>
+          <tbody>
+            <tr><td>Still WordPress</td><td>Usman</td><td>mu-plugin Elementor or CF7/WPForms file</td></tr>
+            <tr><td>Already static / fleet</td><td>John</td><td><code>/form-validation.js</code> or CF7 file via Cloudflare</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="website-section" id="s07" data-id="07">
+        <button class="pin" type="button" data-id="07" aria-label="Show annotation for rescrape">07</button>
+        <p class="kicker">07 · Update later</p>
+        <h2>Already live on static? Recopy WordPress through the hosting IP.</h2>
+        <p class="plain">Do not scrape public HTTPS if it already shows <code>x-source: kv</code>. HTML-only is enough for copy/popup changes. Theme or media needs a full recopy.</p>
+        <ul class="checks">
+          <li>Copy / popup only → <code>-SkipAssets</code></li>
+          <li>Theme or media changed → full HTML + R2</li>
+          <li>Apex already fleet → <code>-SkipRoutes</code></li>
+          <li>Inject form-validation again after HTML</li>
+        </ul>
+        <div class="cmd">
+          <p>Command · HTML-only refresh</p>
+          <pre>cd fleet\worker
+powershell -File .\scripts\Invoke-WpOriginToFleet.ps1 -SitesCsv .\reports\YOUR.csv -HostingIp 174.136.29.214 -SkipRoutes -SkipAssets</pre>
+        </div>
+      </section>
+
+      <section class="website-section" id="s08" data-id="08">
+        <button class="pin" type="button" data-id="08" aria-label="Show annotation for edit loop">08</button>
+        <p class="kicker">08 · Edit in WordPress</p>
         <h2>Need the CMS? Roll the live site back to WordPress. Keep KV and R2.</h2>
-        <p class="plain">Static has no wp-admin. Do not type into KV. Keep old per-site Workers at least 48 hours after a fleet cutover. Do not delete WordPress until QA has passed and a lead says so.</p>
+        <p class="plain">Static has no wp-admin. Default: roll routes off → edit WordPress → recopy from the origin IP → restore fleet. Do not type into KV.</p>
         <div class="flow">
           <span class="chip live">Live static</span>
           <span class="arrow">→</span>
@@ -562,92 +561,113 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Invoke-WpOriginToFleet.ps1 `
           <span class="arrow">→</span>
           <span class="chip wp">Edit on WP</span>
           <span class="arrow">→</span>
-          <span class="chip kv">Rescrape origin IP</span>
+          <span class="chip kv">Recopy origin IP</span>
           <span class="arrow">→</span>
-          <span class="chip live">Restore fleet</span>
+          <span class="chip live">Restore static</span>
         </div>
-        <ol class="steps">
-          <li>Rollback Worker routes so apex hits WordPress. Keep KV and R2.</li>
-          <li>Edit and verify on live WordPress.</li>
-          <li>Rescrape using Path B via the hosting IP (not public HTTPS).</li>
-          <li>Restore fleet routes: B1–7 → <code>fleet-static-worker</code>; new batches → <code>fleet-static-worker-server-1</code>.</li>
-          <li>Verify 200 / kv / x-fleet-host and form-validation.</li>
-        </ol>
-      </section>
-
-      <section class="website-section" id="s07" data-id="07">
-        <button class="pin" type="button" data-id="07" aria-label="Show annotation for forms">07</button>
-        <p class="kicker">07 · Form validation</p>
-        <h2>WordPress never includes our fleet script. Inject it after every HTML scrape.</h2>
-        <p class="plain">The delegated script covers the main form and Elementor popups. Native HTML5 “Please fill in this field” means our script did not intercept. Use <code>fleet\assets\form-validation.js</code> — not the old Downloads copy.</p>
-        <table>
-          <thead><tr><th>Site type</th><th>Who injects</th><th>File</th></tr></thead>
-          <tbody>
-            <tr><td>Remaining WordPress</td><td>Usman</td><td><code>Downloads\fleet\assets\form-validation.js</code></td></tr>
-            <tr><td>Fleet / static</td><td>Conversion via Cloudflare KV + R2</td><td>Same file, <code>Invoke-InjectFleetFormValidation.ps1</code></td></tr>
-          </tbody>
-        </table>
-      </section>
-
-      <section class="website-section" id="s08" data-id="08">
-        <button class="pin" type="button" data-id="08" aria-label="Show annotation for stay WordPress">08</button>
-        <p class="kicker">08 · One we skip</p>
-        <h2>Do not convert this domain. Round Rock, Savannah, and Lake Worth can convert.</h2>
-        <p class="plain">It lives on another Cloudflare account. The old four-domain skip list is wrong — only Azalea Park is stay-WordPress.</p>
-        <p class="skip">azaleaparkfoundationrepair.com</p>
-        <p class="ok-pill" style="margin-left:8px">Round Rock · Savannah · Lake Worth → convert</p>
+        <p class="muted" style="margin-top:12px">aaPanel <code>dev.</code> is an extra staging copy if live must stay static. It is not the default.</p>
       </section>
 
       <section class="website-section" id="s09" data-id="09">
-        <button class="pin" type="button" data-id="09" aria-label="Show annotation for do not">09</button>
-        <p class="kicker">09 · Don't do these</p>
+        <button class="pin" type="button" data-id="09" aria-label="Show annotation for aaPanel">09</button>
+        <p class="kicker">09 · Staging copies</p>
+        <h2>Three hostnames. Two workflows.</h2>
+        <p class="plain">A private WordPress copy, a public preview, and the real site. Which path you use depends on whether live is still WordPress or already static.</p>
+        <div class="hosts">
+          <div class="host"><code>dev.domain.com</code><p>aaPanel staging. Restore and edit WordPress here when you need a copy that is not live.</p></div>
+          <div class="host"><code>static.domain.com</code><p>Fleet preview. Check this before switching the live domain. Stays up after cutover.</p></div>
+          <div class="host"><code>domain.com</code><p>The public site. Do not edit HTML here. CMS = Path C rollback, or optional aaPanel.</p></div>
+        </div>
+        <div class="split" style="margin-top:16px">
+          <div class="panel">
+            <h3>Live site is still WordPress</h3>
+            <p class="muted">Keep WordPress up until the preview passes.</p>
+            <ol class="steps">
+              <li>Audit live domain.com (WP)</li>
+              <li>Edit on dev. in aaPanel, or on live WP if there is no staging copy</li>
+              <li>Re-audit staging. Fail → keep editing</li>
+              <li>Backup staging + production</li>
+              <li>Create static.domain.com if missing</li>
+              <li>Scrape WP → static. (origin IP)</li>
+              <li>Audit static. Fail → scrape again</li>
+              <li>Compare static. vs live WP</li>
+              <li>After approval, switch the live domain</li>
+              <li>Live check + inject form-validation</li>
+            </ol>
+          </div>
+          <div class="panel">
+            <h3>Live site is already static</h3>
+            <p class="muted">Default is Path C (rollback). aaPanel only if live must stay static.</p>
+            <ol class="steps">
+              <li><strong>Default:</strong> roll Worker off → edit live WP → recopy from origin IP → restore fleet</li>
+              <li><strong>Optional aaPanel:</strong> restore latest WP backup to dev.</li>
+              <li>Edit on dev. — not live static / KV</li>
+              <li>Backup edited WordPress</li>
+              <li>Audit dev. Fail → keep editing</li>
+              <li>Scrape to static.</li>
+              <li>Compare dev. vs static. Audit static.</li>
+              <li>Fail → scrape again</li>
+              <li>Compare static. vs live domain.com</li>
+              <li>Push live only if audits pass. Live check + form JS</li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <section class="website-section" id="s10" data-id="10">
+        <button class="pin" type="button" data-id="10" aria-label="Show annotation for stay WordPress">10</button>
+        <p class="kicker">10 · One we skip</p>
+        <h2>Do not convert this domain</h2>
+        <p class="plain">It lives on another Cloudflare account. Round Rock, Savannah, and Lake Worth can convert like everyone else.</p>
+        <p class="skip">azaleaparkfoundationrepair.com</p>
+      </section>
+
+      <section class="website-section" id="s11" data-id="11">
+        <button class="pin" type="button" data-id="11" aria-label="Show annotation for proof">11</button>
+        <p class="kicker">11 · Prove it worked</p>
+        <h2>Headers, form script, images, then a hard refresh</h2>
+        <p class="plain">After go-live or a refresh, check the live page the way a visitor would. Purge cache if you still see the old version.</p>
+        <ul class="checks">
+          <li>Homepage 200 + kv + x-fleet-host</li>
+          <li><code>/form-validation.js</code> 200 (or CF7 file)</li>
+          <li>Main form and popup validate with our script</li>
+          <li>SVGs are <code>image/svg+xml</code>, never <code>application/xml</code></li>
+        </ul>
+      </section>
+
+      <section class="website-section" id="s12" data-id="12">
+        <button class="pin" type="button" data-id="12" aria-label="Show annotation for do not">12</button>
+        <p class="kicker">12 · Don't do these</p>
         <h2>These commands copy stale static or land on the wrong Worker</h2>
         <table>
           <thead><tr><th>Don't</th><th>What goes wrong</th></tr></thead>
           <tbody>
             <tr><td>Scrape public HTTPS when <code>x-source: kv</code></td><td>Old popups come back</td></tr>
             <tr><td><code>Invoke-MigrateSitesToFleet.ps1</code> to refresh</td><td>Copies stale per-site KV</td></tr>
-            <tr><td><code>Invoke-DeepAssetSync.ps1</code> on fleet sites</td><td>Writes <code>{domain}-worker</code> keys, not <code>{host}:html:</code> / <code>{host}:asset:</code></td></tr>
-            <tr><td>Adam <code>/provision-originless</code> to refresh live fleet</td><td>No origin IP; it fetches the public hostname</td></tr>
-            <tr><td>Omit <code>workerName</code> on a new-batch domain</td><td>Attaches <code>static.*</code> to Server 2</td></tr>
-            <tr><td>Move B1–7 live apex to Server 1</td><td>Locked Worker split</td></tr>
-            <tr><td>Skip form-validation inject after HTML scrape</td><td>Origin WP never has the tag</td></tr>
-            <tr><td>Store rating SVGs as <code>application/xml</code></td><td>Broken <code>&lt;img&gt;</code> badges; must be <code>image/svg+xml</code></td></tr>
+            <tr><td><code>Invoke-DeepAssetSync.ps1</code> on fleet sites</td><td>Wrong key prefix</td></tr>
+            <tr><td>Omit <code>workerName</code> on a new batch</td><td>Preview lands on Server 2</td></tr>
+            <tr><td>Skip form-validation inject</td><td>Origin WP never has the tag</td></tr>
           </tbody>
         </table>
       </section>
 
-      <section class="website-section" id="s10" data-id="10">
-        <button class="pin" type="button" data-id="10" aria-label="Show annotation for go-live">10</button>
-        <p class="kicker">10 · Go-live checklist</p>
+      <section class="website-section" id="s13" data-id="13">
+        <button class="pin" type="button" data-id="13" aria-label="Show annotation for go-live">13</button>
+        <p class="kicker">13 · Final checks</p>
         <h2>Walk away only when this list is green</h2>
         <ul class="checks">
-          <li>Correct origin IP for the lane (S2 <code>174.136.29.214</code> or S1 <code>165.140.157.43</code>)</li>
-          <li>Stay-WordPress skip checked (Azalea only)</li>
-          <li><code>static.*</code> QA vs origin, or SkipRoutes on a rescrape</li>
-          <li>Homepage 200 + kv + x-fleet-host</li>
-          <li><code>/form-validation.js</code> 200 and snippet in HTML</li>
-          <li>Main form and popup validate with our script</li>
-          <li>Images <code>x-source: r2</code> after a full scrape</li>
+          <li>Correct origin IP for the lane</li>
+          <li>Stay-WP skip checked</li>
+          <li>Preview QA, or SkipRoutes on a rescrape</li>
           <li>Cache purged · hard-refresh verified</li>
         </ul>
-        <table style="margin-top:18px">
-          <thead><tr><th>Script</th><th>Folder</th><th>Job</th></tr></thead>
-          <tbody>
-            <tr><td><code>Invoke-PreviewStaticOnFleet.ps1</code></td><td>fleet-static-preview</td><td>WP → fleet under <code>static.*</code> only</td></tr>
-            <tr><td><code>Invoke-CutoverApexToFleet.ps1</code></td><td>fleet-static-preview</td><td>Apex + www after QA</td></tr>
-            <tr><td><code>Invoke-WpOriginToFleet.ps1</code></td><td>shared-apex-static</td><td>Origin-IP scrape into HTML_FLEET / R2</td></tr>
-            <tr><td><code>Invoke-InjectFleetFormValidation.ps1</code></td><td>fleet-static-preview</td><td>R2 JS + KV HTML snippet</td></tr>
-            <tr><td><code>Invoke-PopupReexportFromOrigin.ps1</code></td><td>shared-apex-static</td><td>Popup list; picks Server 1 vs 2 IP</td></tr>
-          </tbody>
-        </table>
       </section>
     </article>
 
-    <aside class="annotation-rail" aria-label="SOP annotations">
+    <aside class="annotation-rail" aria-label="Conversion annotations">
       <div class="rail-head">
         <p class="rail-kicker">Interactive anatomy</p>
-        <h2>Why each operating step earns its place</h2>
+        <h2>Why each conversion stage earns its place</h2>
         <p class="rail-intro">Choose an analysis mode. Hover a pin, timeline row, or note for an instant callout. Click to keep it open.</p>
         <div class="mode-tabs" role="tablist" aria-label="Annotation mode">
           <button class="mode-button" type="button" role="tab" data-mode="process" aria-selected="true">What to do</button>
@@ -657,96 +677,109 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Invoke-WpOriginToFleet.ps1 `
         <div class="structure-panel">
           <div class="structure-panel-head">
             <strong>Page structure</strong>
-            <span class="structure-count" id="structure-count">01 / 10</span>
+            <span class="structure-count" id="structure-count">01 / 13</span>
           </div>
           <ol class="structure-table" id="rail"></ol>
         </div>
       </div>
       <div class="notes-label"><span>Mode notes</span><span>Hover for annotation · Click to pin</span></div>
       <ol class="annotation-list" id="notes"></ol>
-      <p class="rail-foot">Live: <a href="https://sop-convert-preview-cutover-rescrape.michael-215.workers.dev/">sop-convert-preview-cutover-rescrape.michael-215.workers.dev</a>. Companion: <a href="https://conversion-process-guide.michael-215.workers.dev/">conversion-process-guide</a>.</p>
+      <p class="rail-foot">Live: <a href="https://conversion-process-guide.michael-215.workers.dev/">conversion-process-guide.michael-215.workers.dev</a>. Run commands from Downloads\fleet.</p>
     </aside>
   </main>
 
   <script>
     const RAIL = [
-      ["01", "Three jobs", "Lock"],
-      ["02", "Architecture", "Split"],
-      ["03", "Which server", "Lane"],
-      ["04", "Path A convert", "Preview"],
-      ["05", "Path B rescrape", "Refresh"],
-      ["06", "Path C edit loop", "CMS"],
-      ["07", "Form validation", "Inject"],
-      ["08", "One we skip", "Exclude"],
-      ["09", "Don't do these", "Guard"],
-      ["10", "Go-live checks", "Ship"]
+      ["01", "WordPress first", "Lock"],
+      ["02", "Which server", "Split"],
+      ["03", "Make a preview", "Convert"],
+      ["04", "Check preview", "Prove"],
+      ["05", "Switch live", "Switch"],
+      ["06", "Form checks", "Inject"],
+      ["07", "Update later", "Refresh"],
+      ["08", "Edit in WP", "CMS"],
+      ["09", "Staging copies", "Staging"],
+      ["10", "One we skip", "Exclude"],
+      ["11", "Prove it", "Verify"],
+      ["12", "Don't do these", "Guard"],
+      ["13", "Final checks", "Ship"]
     ];
 
     const NOTES = {
       process: {
         "01": ["Copy from WordPress on the hosting IP", "Public HTTPS on a fleet site recopies KV, including old popups. Use curl --resolve to the origin IP."],
-        "02": ["B1–7 stay on Server 2", "New batches use fleet-static-worker-server-1. Shared HTML_FLEET + fleet-static-assets. Preview keys use static.{domain}:…"],
-        "03": ["If you cannot reach the origin IP, stop", "Do not fall back to public HTTPS. Server 2 = 174.136.29.214. Server 1 = 165.140.157.43."],
-        "04": ["Preview first, live site later", "Invoke-PreviewStaticOnFleet attaches static.{domain}/* only. Adam provision-originless is preview, no origin IP, no apex."],
-        "05": ["HTML-only when only HTML changed", "SkipRoutes if apex is already fleet. Full HTML+R2 when theme or media changed. Then inject form JS again."],
-        "06": ["Rollback, edit, recopy, restore", "Do not type into KV. Keep old per-site Workers 48 hours. Restore B1–7 to Server 2, new batches to Server 1."],
-        "07": ["Inject after every HTML scrape", "Usman covers remaining WP. Conversion injects fleet sites. Do not use Downloads\\form-validation.js."],
-        "08": ["Only Azalea Park is skipped", "Never convert azaleaparkfoundationrepair.com. Round Rock, Savannah, and Lake Worth can convert."],
-        "09": ["Wrong scripts copy stale static", "No MigrateSitesToFleet for refresh. No DeepAssetSync on fleet. Never omit workerName on a new-batch Adam scrape."],
-        "10": ["Checklist before you walk away", "Lane IP, Azalea skip, preview QA or SkipRoutes, headers, form JS 200, images, purge."]
+        "02": ["B1–7 stay on Server 2", "New batches use fleet-static-worker-server-1 and 165.140.157.43. Shared HTML_FLEET + fleet-static-assets."],
+        "03": ["Preview first, live site later", "Invoke-PreviewStaticOnFleet attaches static.{domain}/* only. Adam provision-originless is preview, no origin IP, no apex."],
+        "04": ["Sean compares preview to live WordPress", "26-check, eyeball, forms, images. Do not cut over because the scrape looked fine in the terminal."],
+        "05": ["Cutover is a route change", "Same KV/R2 keys, now serving client.com. Keep the old per-site Worker at least 48 hours so we can roll back."],
+        "06": ["Inject after every HTML scrape", "Elementor uses /form-validation.js. CF7/WPForms use the CF7 file. Origin WP never includes the fleet snippet."],
+        "07": ["HTML-only when only HTML changed", "SkipRoutes if apex is already fleet. Full HTML+R2 when theme or media changed. Then inject form JS again."],
+        "08": ["Rollback, edit, recopy, restore", "Do not type into KV. Default CMS path is this loop. aaPanel dev. is extra, not the default."],
+        "09": ["dev. is private WP, static. is preview, apex is live", "Still WordPress: audit, optional aaPanel, scrape preview, then cut over. Already static: Path C by default."],
+        "10": ["Only Azalea Park is skipped", "Never convert azaleaparkfoundationrepair.com. Round Rock, Savannah, and Lake Worth can convert."],
+        "11": ["Headers are the proof", "200 + x-source: kv + x-fleet-host. SVG badges must be image/svg+xml. Purge cache and hard-refresh."],
+        "12": ["Wrong scripts copy stale static", "No MigrateSitesToFleet for refresh. No DeepAssetSync on fleet. Never omit workerName on a new-batch Adam scrape."],
+        "13": ["Checklist before you walk away", "Lane IP, skip list, preview QA or SkipRoutes, headers, form JS 200, images, purge."]
       },
       owners: {
         "01": ["Usman owns live WordPress", "Pages, forms, CallRail, popups. John does not edit content in KV."],
         "02": ["John owns Cloudflare", "Workers, KV, R2, routes, DNS for static.*. Token from the vault — never Slack."],
-        "03": ["Operator picks the lane", "Wrong IP scrapes the wrong machine. Confirm Server 1 vs 2 before the first curl."],
-        "04": ["John runs preview; Sean signs off", "Cutover needs -IConfirmApexCutover. Adam never switches apex/www."],
-        "05": ["John recopies after Usman", "Ping when WP is saved. HTML-only if only HTML/popups changed."],
-        "06": ["Usman edits only on WordPress", "John rolls routes off, then back. Keep KV/R2 during rollback."],
-        "07": ["Split by platform", "Usman: remaining WP. John: fleet inject via Invoke-InjectFleetFormValidation.ps1."],
-        "08": ["Lead confirms the skip", "Only Azalea Park is excluded. Leave it on WordPress."],
-        "09": ["If unsure, ask John", "Wrong scrape path is how stale popups return."],
-        "10": ["Operator + QA", "John checks headers/JS. Sean checks the page. Usman only if a WP fix is still needed."]
+        "03": ["John runs preview", "Usman confirms origin WP is ready. Sean does not QA the live domain until static.* exists."],
+        "04": ["Sean signs off", "26-check + eyeball vs origin. Do not cut over on a yellow 26-check."],
+        "05": ["John switches the live domain", "Flag -IConfirmApexCutover is required. Adam never switches apex/www."],
+        "06": ["Split by platform", "Usman: remaining WP. John: fleet inject. CF7 = Texarkana skeleton. WPForms = Phone type + Zip."],
+        "07": ["John recopies after Usman", "Ping when WP is saved. HTML-only if only HTML/popups changed."],
+        "08": ["Usman edits only on WordPress", "John rolls routes off, then back. Keep KV/R2 during rollback."],
+        "09": ["Usman on aaPanel / WP", "John owns static.* scrape and apex routes. Sean audits static. vs origin before cutover."],
+        "10": ["Lead confirms the skip", "Only Azalea Park is excluded. Leave it on WordPress."],
+        "11": ["John checks headers", "Sean can re-spot-check forms after inject."],
+        "12": ["If unsure, ask John", "Wrong scrape path is how stale popups return."],
+        "13": ["Operator + QA", "John checks headers/JS. Sean checks the page. Usman only if a WP fix is still needed."]
       },
       guardrails: {
         "01": ["Never scrape x-source: kv", "That is the static snapshot, not WordPress. Use --resolve to the hosting IP."],
         "02": ["Do not move B1–7 to Server 1", "Locked split. Omit workerName on Adam only for B1–7."],
-        "03": ["Do not invent a third origin", "If the IP is unreachable, stop. Public HTTPS on fleet recopies KV."],
-        "04": ["No live switch until QA", "Preview route only. Cutover script refuses without -IConfirmApexCutover."],
-        "05": ["No MigrateSitesToFleet refresh", "Copies stale per-site KV. No Adam provision to refresh live fleet."],
-        "06": ["Do not delete WordPress or old Workers yet", "Need a rollback window. Model B delete is lead-only after soak."],
-        "07": ["Wrong JS file fails silently", "Do not use Downloads\\form-validation.js or the static-conversion copy."],
-        "08": ["Do not convert Azalea Park", "Other account. Do not treat Round Rock / Savannah / Lake Worth as skip sites."],
-        "09": ["New batch must send workerName", "Otherwise static.* attaches to Server 2. SVG must be image/svg+xml."],
-        "10": ["Skip the inject and forms die", "Re-inject after every HTML scrape, every time."]
+        "03": ["No live switch until QA", "Preview route only. Cutover script refuses without -IConfirmApexCutover."],
+        "04": ["A terminal 200 is not QA", "Theme/logo misses happened on ‘successful’ scrapes."],
+        "05": ["Do not delete WordPress or old Workers yet", "Need a rollback window. Model B delete is lead-only after soak."],
+        "06": ["Wrong JS file fails silently", "The Elementor script will not bind CF7/WPForms. Do not use Downloads\\form-validation.js."],
+        "07": ["No MigrateSitesToFleet refresh", "Copies stale per-site KV. No DeepAssetSync. No Adam provision to refresh live fleet."],
+        "08": ["Do not edit production static HTML", "Rollback to WP. aaPanel dev. is optional, not the default."],
+        "09": ["aaPanel is not the CMS default", "Already-fleet sites use Path C. Optional dev. only when apex must stay static."],
+        "10": ["Do not convert Azalea Park", "Other account. Do not treat Round Rock / Savannah / Lake Worth as skip sites."],
+        "11": ["SVG must be image/svg+xml", "application/xml shows broken rating badges."],
+        "12": ["New batch must send workerName", "Otherwise static.* attaches to Server 2."],
+        "13": ["Skip the inject and forms die", "Re-inject after every HTML scrape, every time."]
       }
     };
 
     const WHY = {
       process: [
         ["01", "One source", "Every refresh starts from current WordPress on the hosting IP, not from last week’s KV.", "Source of truth"],
-        ["04", "Preview absorbs scrape risk", "static.* lets QA fail without taking down client.com.", "Preview first"],
-        ["05", "HTML-only is cheaper", "Popup/copy fixes should not re-upload every image.", "Cheaper refresh"],
-        ["06", "CMS needs WordPress", "Static has no wp-admin. Rollback is how Usman works.", "Edit on WP"],
-        ["07", "WP cannot carry fleet JS", "The origin snapshot has no tag. Inject is required, not optional.", "Required inject"]
+        ["03", "Preview absorbs scrape risk", "static.* lets QA fail without taking down client.com.", "Preview first"],
+        ["05", "Cutover is just routes", "Content is already in HTML_FLEET. The switch is reversible.", "Reversible"],
+        ["06", "WP cannot carry fleet JS", "The origin snapshot has no tag. Inject is required, not optional.", "Required inject"],
+        ["07", "HTML-only is cheaper", "Popup/copy fixes should not re-upload every image.", "Cheaper refresh"],
+        ["08", "CMS needs WordPress", "Static has no wp-admin. Rollback is how Usman works.", "Edit on WP"],
+        ["09", "Three hosts, two workflows", "dev. is optional staging. static. is preview. Apex is production.", "Host map"]
       ],
       owners: [
         ["01", "Usman before scrape", "Field names and popups must be right on WP or the snapshot is wrong until the next scrape.", "WP owner"],
-        ["04", "Sean before live switch", "Conversion does not self-approve. Adam stops at preview.", "QA gate"],
-        ["07", "Two inject owners", "Remaining WP vs fleet. Same JS file, different inject path.", "Split inject"],
-        ["10", "John checks headers", "Sean can re-spot-check forms after inject.", "Proof"]
+        ["04", "Sean before live switch", "Conversion does not self-approve.", "QA gate"],
+        ["05", "John on the live domain", "Adam stops at preview. That is intentional.", "Apex owner"],
+        ["06", "Two inject owners", "Remaining WP vs fleet. Different files for Elementor vs CF7/WPForms.", "Split inject"]
       ],
       guardrails: [
         ["01", "Public HTTPS is a trap", "If the host is already kv, you are copying yourself.", "Don't recopy KV"],
         ["02", "Server split is locked", "B1–7 live apex never moves to fleet-static-worker-server-1.", "Locked split"],
-        ["08", "The skip is not a backlog", "Only azaleaparkfoundationrepair.com is excluded.", "Skip list"],
-        ["09", "Named bad scripts", "MigrateSitesToFleet and DeepAssetSync look helpful and write the wrong store.", "Wrong scripts"]
+        ["12", "Named bad scripts", "MigrateSitesToFleet and DeepAssetSync look helpful and write the wrong store.", "Wrong scripts"],
+        ["10", "The skip is not a backlog", "Only azaleaparkfoundationrepair.com is excluded.", "Skip list"]
       ]
     };
 
     const railEl = document.getElementById("rail");
     const notesEl = document.getElementById("notes");
     const countEl = document.getElementById("structure-count");
-    const TOTAL = String(RAIL.length).padStart(2, "0");
     let mode = "process";
     let pinned = null;
     let hover = null;
@@ -769,7 +802,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\Invoke-WpOriginToFleet.ps1 `
 
     function paint() {
       const id = currentId();
-      countEl.textContent = id + " / " + TOTAL;
+      countEl.textContent = id + " / 13";
       document.querySelectorAll(".structure-row").forEach((b) => b.classList.toggle("is-current", b.dataset.id === id));
       document.querySelectorAll(".pin").forEach((p) => p.setAttribute("aria-pressed", p.dataset.id === id ? "true" : "false"));
       document.querySelectorAll(".annotation-card").forEach((c) => c.classList.toggle("is-on", c.dataset.id === id));
