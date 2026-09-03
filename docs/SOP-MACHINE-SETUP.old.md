@@ -194,7 +194,7 @@ Expect all checks green. If this fails, stop and fix the token with the lead. Do
 | Shared KV | `HTML_FLEET` |
 | Shared R2 | `fleet-static-assets` |
 | Form JS (fleet inject) | `C:\Users\<You>\Downloads\fleet\assets\form-validation.js` |
-| Stay-WordPress (never convert) | `azaleaparkfoundationrepair.com` only. Round Rock, Savannah, and Lake Worth can convert. |
+| Stay-WordPress (never convert) | `roundrockfoundationrepairexperts.com`, `solidfoundationrepairofsavannah.com`, `solidfoundationrepairoflakeworth.com`, `azaleaparkfoundationrepair.com` |
 
 Do not move Batches 1–7 live apex onto `fleet-static-worker-server-1`.
 
@@ -265,7 +265,7 @@ Do not convert or cut over apex until that SOP is clear. First real job: **one**
 | Commit or zip `.env` | Token in git / shared drive |
 | Paste the token into chat | Vault only |
 | Re-provision fleet “to be safe” | Infra is already live; you can overwrite routes |
-| Skip Stay-WordPress excludes | Never convert azaleaparkfoundationrepair.com |
+| Skip Stay-WordPress excludes | Never convert those four domains |
 | Scrape public HTTPS on a live fleet site | Recopies stale KV |
 | Use `Downloads\form-validation.js` | Missing popup listeners; use `fleet\assets\form-validation.js` |
 | Omit `workerName` on a new-batch Adam scrape | Lands `static.*` on Server 2 |

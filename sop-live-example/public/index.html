@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Live example · coconutcreekfoundationrepair.com · CityThrive</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Jost:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy-deep: #0b1c22;
+      --paper: #fff;
+      --ink: #1b1b1b;
+      --muted: #5b6a70;
+      --line: rgba(19, 43, 52, 0.2);
+      --orange: #e9880b;
+      --blue: #2f67f6;
+      --wp: #2271b1;
+      --kv: #0f766e;
+      --live: #c2410c;
+      --fail: #b4233a;
+      --shadow: 0 20px 55px rgba(12, 30, 36, 0.16);
+      --display: Jost, Arial, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font: 400 16px/1.5 var(--display);
+      background-color: #dfe4e5;
+      background-image:
+        linear-gradient(rgba(19, 43, 52, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(19, 43, 52, 0.035) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+    a { color: var(--blue); }
+    code, pre { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+
+    .artifact-header {
+      width: min(1540px, 100% - 48px);
+      margin: 28px auto 18px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .artifact-eyebrow {
+      margin: 0 0 6px;
+      color: var(--orange);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .artifact-header h1 {
+      margin: 0;
+      color: var(--navy-deep);
+      font-size: clamp(30px, 3vw, 48px);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+    .artifact-meta {
+      margin: 0;
+      max-width: 42ch;
+      color: var(--muted);
+      font-size: 15px;
+      text-align: right;
+    }
+
+    .artifact-shell {
+      width: min(1540px, 100% - 48px);
+      margin: 0 auto 64px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 430px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .browser-frame {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+    .browser-bar {
+      display: grid;
+      grid-template-columns: 76px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      min-height: 46px;
+      padding: 6px 14px;
+      background: #f3f5f6;
+      border-bottom: 1px solid rgba(19, 43, 52, 0.12);
+    }
+    .browser-dots { display: flex; gap: 6px; }
+    .browser-dots span { width: 10px; height: 10px; border-radius: 50%; display: block; }
+    .browser-dots span:nth-child(1) { background: #f87171; }
+    .browser-dots span:nth-child(2) { background: #fbbf24; }
+    .browser-dots span:nth-child(3) { background: #4ade80; }
+    .host-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+    .host-tab {
+      border: 1px solid rgba(19, 43, 52, 0.12);
+      border-radius: 8px;
+      background: #fff;
+      color: #4b5c62;
+      padding: 6px 10px;
+      font: 650 12px/1.2 var(--display);
+      cursor: pointer;
+    }
+    .host-tab[aria-selected="true"] {
+      color: #121c1e;
+      background: var(--orange);
+      border-color: var(--orange);
+    }
+    .open-live {
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .proof {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      padding: 10px 16px;
+      background: #081a21;
+      color: #c5d3d6;
+      font: 500 12px/1.3 "IBM Plex Mono", ui-monospace, monospace;
+    }
+    .proof b { color: #8fd0b0; font-weight: 700; }
+    .proof .miss { color: #f3bf76; }
+
+    .live-stage {
+      position: relative;
+      height: min(68vh, 720px);
+      background: #eef1f2;
+    }
+    .live-stage iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #fff;
+    }
+    .live-fallback {
+      display: none;
+      place-items: center;
+      height: 100%;
+      padding: 32px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .live-stage.is-blocked iframe { display: none; }
+    .live-stage.is-blocked .live-fallback { display: grid; }
+
+    .website-section {
+      position: relative;
+      padding: 36px 48px 36px 40px;
+      border-bottom: 1px solid rgba(19, 43, 52, 0.1);
+    }
+    .website-section:last-child { border-bottom: 0; }
+    .website-section.is-highlighted {
+      outline: 2px solid rgba(47, 103, 246, 0.45);
+      outline-offset: -2px;
+      background: rgba(47, 103, 246, 0.04);
+    }
+    .website-section.hero { padding-top: 28px; }
+    .kicker {
+      margin: 0 0 8px;
+      color: var(--orange);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .website-section h2 {
+      margin: 0 0 10px;
+      font-size: clamp(26px, 2.4vw, 38px);
+      font-weight: 500;
+      letter-spacing: -0.03em;
+      line-height: 1.12;
+    }
+    .plain {
+      margin: 0 0 14px;
+      max-width: 68ch;
+      color: var(--muted);
+    }
+    .muted { color: var(--muted); }
+
+    .pin {
+      position: absolute;
+      z-index: 6;
+      top: 16px;
+      right: 16px;
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border: 3px solid #fff;
+      border-radius: 50%;
+      color: #fff;
+      background: var(--blue);
+      box-shadow: 0 5px 18px rgba(18, 50, 134, 0.35);
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 1;
+      cursor: pointer;
+      transition: background 150ms, box-shadow 150ms, transform 150ms;
+    }
+    .pin:hover, .pin:focus-visible, .pin[aria-pressed="true"],
+    .website-section.is-highlighted > .pin {
+      background: var(--orange);
+      box-shadow: 0 7px 24px rgba(233, 136, 11, 0.48);
+      outline: 3px solid rgba(255,255,255,0.78);
+      outline-offset: 2px;
+      transform: scale(1.09);
+    }
+
+    .flow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0; }
+    .chip {
+      background: #f3f5f6;
+      border: 1px solid rgba(19, 43, 52, 0.12);
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .chip.wp { background: #e8f3fb; color: var(--wp); }
+    .chip.kv { background: #e7f7f3; color: var(--kv); }
+    .chip.live { background: #fff1e6; color: var(--live); }
+
+    .split { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 16px; align-items: start; }
+    .panel {
+      background: #f7f9f9;
+      border: 1px solid rgba(19, 43, 52, 0.1);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+    .panel h3 { margin: 0 0 8px; font-size: 16px; font-weight: 700; }
+
+    .checks { margin: 12px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+    .checks li { font-size: 15px; padding-left: 18px; position: relative; }
+    .checks li::before { content: "▸"; position: absolute; left: 0; color: var(--orange); font-weight: 800; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid rgba(19, 43, 52, 0.1); vertical-align: top; }
+    th { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+
+    .cmd { margin: 14px 0 0; }
+    .cmd p { margin: 0 0 6px; font-size: 12px; font-weight: 800; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; }
+    pre {
+      margin: 0;
+      background: #081a21;
+      color: #e8f0f2;
+      border-radius: 10px;
+      padding: 12px 14px;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      font-size: 12.5px;
+      line-height: 1.45;
+    }
+
+    .annotation-rail {
+      position: sticky;
+      top: 16px;
+      max-height: calc(100vh - 32px);
+      overflow: auto;
+      border: 1px solid rgba(19, 43, 52, 0.22);
+      border-radius: 14px;
+      color: #dfe9eb;
+      background: var(--navy-deep);
+      box-shadow: 0 20px 55px rgba(12, 30, 36, 0.22);
+      scrollbar-color: #486069 transparent;
+      scrollbar-width: thin;
+    }
+    .rail-head { padding: 18px 16px 12px; }
+    .rail-kicker {
+      margin: 0 0 5px;
+      color: var(--orange);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .annotation-rail h2 {
+      margin: 0 0 8px;
+      font-size: 26px;
+      font-weight: 500;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+    }
+    .rail-intro { margin: 0 0 14px; color: #9fb0b4; font-size: 14px; }
+    .mode-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 4px;
+      padding: 4px;
+      border-radius: 7px;
+      background: rgba(255,255,255,0.04);
+    }
+    .mode-button {
+      min-height: 40px;
+      padding: 8px 7px;
+      border: 0;
+      border-radius: 4px;
+      color: #9fb0b4;
+      background: transparent;
+      cursor: pointer;
+      font: 850 11px/1 var(--display);
+    }
+    .mode-button:hover { color: #fff; background: rgba(255,255,255,0.07); }
+    .mode-button[aria-selected="true"] { color: #121c1e; background: var(--orange); }
+
+    .structure-panel { padding: 13px 16px 0; }
+    .structure-panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    .structure-count { color: #83979c; font-size: 12px; }
+    .structure-table { list-style: none; margin: 0; padding: 0; }
+    .structure-row {
+      width: 100%;
+      min-height: 34px;
+      padding: 3px 5px 3px 0;
+      display: grid;
+      grid-template-columns: 31px minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+      border: 0;
+      border-radius: 4px;
+      color: #aebec1;
+      background: transparent;
+      cursor: pointer;
+      text-align: left;
+      font: 500 13px/1.2 var(--display);
+    }
+    .structure-row:hover, .structure-row:focus-visible, .structure-row.is-current {
+      color: #fff;
+      background: rgba(47, 103, 246, 0.16);
+      outline: none;
+    }
+    .structure-node {
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 50%;
+      font-size: 8px;
+      font-weight: 900;
+    }
+    .structure-row.is-current .structure-node,
+    .structure-row:hover .structure-node {
+      border-color: var(--orange);
+      color: var(--navy-deep);
+      background: var(--orange);
+    }
+    .structure-role {
+      padding: 2px 5px;
+      border: 1px solid rgba(255,255,255,0.13);
+      border-radius: 3px;
+      color: #83979c;
+      font-size: 7px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .structure-row.is-current .structure-role {
+      border-color: rgba(233, 136, 11, 0.5);
+      color: #f3bf76;
+    }
+
+    .notes-label {
+      margin: 14px 16px 0;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      color: #83979c;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .annotation-list {
+      list-style: none;
+      margin: 0;
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+    .annotation-card {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 10px;
+      padding: 17px;
+      border-radius: 7px;
+      background: rgba(255,255,255,0.043);
+      cursor: pointer;
+    }
+    .annotation-card.is-on { background: rgba(47, 103, 246, 0.16); }
+    .annotation-number { color: var(--orange); font-size: 12px; font-weight: 900; }
+    .annotation-card h3 { margin: 0 0 6px; font-size: 16px; font-weight: 600; }
+    .annotation-card p { margin: 0; color: #9fb0b4; font-size: 13.5px; }
+    .annotation-status {
+      display: inline-block;
+      margin-top: 8px;
+      color: #8fd0b0;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .rail-foot { padding: 0 16px 16px; color: #83979c; font-size: 12px; }
+
+    @media (max-width: 1050px) {
+      .artifact-header { flex-direction: column; align-items: flex-start; }
+      .artifact-meta { text-align: left; }
+      .artifact-shell { grid-template-columns: 1fr; }
+      .annotation-rail { position: relative; top: auto; max-height: none; order: -1; }
+      .split, .checks { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 760px) {
+      .artifact-header, .artifact-shell { width: min(100% - 20px, 680px); }
+      .website-section { padding: 28px 20px 28px; }
+      .mode-tabs { grid-template-columns: 1fr; }
+      .live-stage { height: 70vh; }
+    }
+  </style>
+</head>
+<body>
+  <header class="artifact-header">
+    <div>
+      <p class="artifact-eyebrow">CityThrive · Fleet SOP · CT-SOP-LIVE-EXAMPLE · 3 Sep 2026</p>
+      <h1>Live example site</h1>
+    </div>
+    <p class="artifact-meta">A real Batch 4 fleet site. The frame is coconutcreekfoundationrepair.com — not a mockup.</p>
+  </header>
+
+  <main class="artifact-shell">
+    <article class="browser-frame">
+      <div class="browser-bar">
+        <div class="browser-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div class="host-tabs" role="tablist" aria-label="Which host to show">
+          <button class="host-tab" type="button" role="tab" data-host="coconutcreekfoundationrepair.com" aria-selected="true">Live apex</button>
+          <button class="host-tab" type="button" role="tab" data-host="static.coconutcreekfoundationrepair.com" aria-selected="false">Preview static.*</button>
+        </div>
+        <a class="open-live" id="open-live" href="https://coconutcreekfoundationrepair.com/" target="_blank" rel="noopener">Open in new tab</a>
+      </div>
+      <div class="proof" id="proof">Checking headers…</div>
+      <div class="live-stage" id="live-stage">
+        <iframe id="live-frame" title="Live Coconut Creek fleet site" src="https://coconutcreekfoundationrepair.com/" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        <div class="live-fallback">
+          <p>The live site would not load in this frame. Use <a id="fallback-link" href="https://coconutcreekfoundationrepair.com/" target="_blank" rel="noopener">Open in new tab</a>.</p>
+        </div>
+      </div>
+
+      <section class="website-section hero" id="s01" data-id="01">
+        <button class="pin" type="button" data-id="01" aria-label="Show annotation for live site">01</button>
+        <p class="kicker">01 · Real client.com</p>
+        <h2>This is coconutcreekfoundationrepair.com on fleet right now.</h2>
+        <p class="plain">It is a teaching example of a finished Path A. Apex is already static. Do not cut it over again. Switch Live apex / Preview static.* in the chrome to compare the two hosts.</p>
+        <div class="flow">
+          <span class="chip wp">Was WordPress</span>
+          <span class="chip kv">Now x-source: kv</span>
+          <span class="chip live">Visitors hit client.com</span>
+        </div>
+      </section>
+
+      <section class="website-section" id="s02" data-id="02">
+        <button class="pin" type="button" data-id="02" aria-label="Show annotation for headers">02</button>
+        <p class="kicker">02 · Proof it is fleet</p>
+        <h2>The bar above the site is a live header check, not a screenshot.</h2>
+        <p class="plain">You want HTTP 200, <code>x-source: kv</code>, and <code>x-fleet-host</code> set. kv without x-fleet-host is the old per-site Worker — that is not this site.</p>
+        <div class="split">
+          <div class="panel">
+            <h3>Live apex</h3>
+            <p class="muted" style="margin:0"><code>coconutcreekfoundationrepair.com</code> · Server 2 · <code>fleet-static-worker</code></p>
+          </div>
+          <div class="panel">
+            <h3>Preview</h3>
+            <p class="muted" style="margin:0"><code>static.coconutcreekfoundationrepair.com</code> still exists on this domain. Same KV/R2, preview host prefix.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="website-section" id="s03" data-id="03">
+        <button class="pin" type="button" data-id="03" aria-label="Show annotation for form js">03</button>
+        <p class="kicker">03 · Form validation</p>
+        <h2>Origin WordPress never had our script. Fleet injects it.</h2>
+        <p class="plain"><code>/form-validation.js</code> should be HTTP 200 on both hosts. After any HTML rescrape, inject it again.</p>
+        <div class="cmd">
+          <p>Check from a terminal</p>
+          <pre>curl.exe -sI -A "Mozilla/5.0" https://coconutcreekfoundationrepair.com/form-validation.js</pre>
+        </div>
+      </section>
+
+      <section class="website-section" id="s04" data-id="04">
+        <button class="pin" type="button" data-id="04" aria-label="Show annotation for path A">04</button>
+        <p class="kicker">04 · Path A already happened</p>
+        <h2>This site is past preview-only. Apex is fleet.</h2>
+        <p class="plain">For a <b>new</b> domain you would stop at <code>static.*</code> until QA signs off, then <code>-IConfirmApexCutover</code>. Coconut Creek is already on the far side of that. Use it to see the result, not as a cutover drill.</p>
+      </section>
+
+      <section class="website-section" id="s05" data-id="05">
+        <button class="pin" type="button" data-id="05" aria-label="Show annotation for path B">05</button>
+        <p class="kicker">05 · If WordPress changes later</p>
+        <h2>Path B: rescrape the hosting IP. Do not scrape this public URL.</h2>
+        <p class="plain">The frame is already <code>x-source: kv</code>. Fetching HTTPS here recopies last week’s snapshot, including old popups. Origin is Server 2: <code>174.136.29.214</code>.</p>
+        <div class="cmd">
+          <p>HTML-only refresh (apex already fleet)</p>
+          <pre>powershell -ExecutionPolicy Bypass -File .\scripts\Invoke-WpOriginToFleet.ps1 -SitesCsv .\reports\{csv} -HostingIp 174.136.29.214 -SkipRoutes -SkipAssets</pre>
+        </div>
+      </section>
+
+      <section class="website-section" id="s06" data-id="06">
+        <button class="pin" type="button" data-id="06" aria-label="Show annotation for path C">06</button>
+        <p class="kicker">06 · Need wp-admin</p>
+        <h2>Path C: roll routes back to WordPress, edit, rescrape, restore fleet.</h2>
+        <p class="plain">Static has no CMS. Do not type into KV. Keep KV and R2 during rollback. This example page does not roll anything — it only shows the live fleet result.</p>
+      </section>
+
+      <section class="website-section" id="s07" data-id="07">
+        <button class="pin" type="button" data-id="07" aria-label="Show annotation for do not">07</button>
+        <p class="kicker">07 · Don't do these on this domain</p>
+        <h2>Do not treat a working example as a job to rerun.</h2>
+        <table>
+          <thead><tr><th>Don't</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td>Cut over apex again</td><td>Already on fleet-static-worker</td></tr>
+            <tr><td>Scrape public HTTPS to “refresh”</td><td>You copy kv into kv</td></tr>
+            <tr><td>Move it to Server 1</td><td>Batches 1–7 live apex stay on Server 2</td></tr>
+            <tr><td>Use MigrateSitesToFleet / DeepAssetSync</td><td>Wrong store</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="website-section" id="s08" data-id="08">
+        <button class="pin" type="button" data-id="08" aria-label="Show annotation for checklist">08</button>
+        <p class="kicker">08 · What you should see</p>
+        <h2>Walk the frame, then confirm these</h2>
+        <ul class="checks">
+          <li>Homepage looks like a real client site</li>
+          <li>Proof bar: 200 + kv + x-fleet-host</li>
+          <li>static.* tab also 200 / kv</li>
+          <li>/form-validation.js 200</li>
+          <li>Open in new tab matches the frame</li>
+        </ul>
+      </section>
+    </article>
+
+    <aside class="annotation-rail" aria-label="Live example annotations">
+      <div class="rail-head">
+        <p class="rail-kicker">Interactive anatomy</p>
+        <h2>Why this live site is the example</h2>
+        <p class="rail-intro">Hover a pin or timeline row. Switch Live apex / static.* in the chrome. Click to keep a note open.</p>
+        <div class="mode-tabs" role="tablist" aria-label="Annotation mode">
+          <button class="mode-button" type="button" role="tab" data-mode="process" aria-selected="true">What to do</button>
+          <button class="mode-button" type="button" role="tab" data-mode="seen" aria-selected="false">What you see</button>
+          <button class="mode-button" type="button" role="tab" data-mode="guardrails" aria-selected="false">Don't do this</button>
+        </div>
+        <div class="structure-panel">
+          <div class="structure-panel-head">
+            <strong>Page structure</strong>
+            <span class="structure-count" id="structure-count">01 / 08</span>
+          </div>
+          <ol class="structure-table" id="rail"></ol>
+        </div>
+      </div>
+      <div class="notes-label"><span>Mode notes</span><span>Hover for annotation · Click to pin</span></div>
+      <ol class="annotation-list" id="notes"></ol>
+      <p class="rail-foot">Live: <a href="https://sop-live-example.michael-215.workers.dev/">sop-live-example.michael-215.workers.dev</a>. Companion: <a href="https://sop-convert-preview-cutover-rescrape.michael-215.workers.dev/">convert SOP</a>.</p>
+    </aside>
+  </main>
+
+  <script>
+    const APEX = "coconutcreekfoundationrepair.com";
+    const PREVIEW = "static.coconutcreekfoundationrepair.com";
+
+    const RAIL = [
+      ["01", "Real client.com", "Live"],
+      ["02", "Proof headers", "kv"],
+      ["03", "Form validation", "Inject"],
+      ["04", "Path A done", "Done"],
+      ["05", "Path B later", "Refresh"],
+      ["06", "Path C edit", "CMS"],
+      ["07", "Don't rerun it", "Guard"],
+      ["08", "What you should see", "Check"]
+    ];
+
+    const WHY = {
+      process: [
+        ["01", "Use a finished site", "Coconut Creek already passed preview and apex. Learn from the result.", "Example"],
+        ["02", "Headers are the proof", "200 + kv + x-fleet-host. The bar is fetched live.", "Live probe"],
+        ["05", "Refresh via origin IP", "Public HTTPS on this host is kv. Path B uses 174.136.29.214.", "Path B"],
+        ["06", "CMS is WordPress", "Rollback routes, edit, rescrape. Do not edit KV.", "Path C"],
+        ["08", "Then open a new tab", "Confirm the frame matches https://coconutcreekfoundationrepair.com/", "Eyeball"]
+      ],
+      seen: [
+        ["01", "The frame is the product", "Same HTML/CSS/JS visitors get. Not a drawing of a homepage.", "Real DOM"],
+        ["02", "Preview host still kv", "static.* is the QA copy. Apex is the live copy. Same Worker family.", "Two hosts"],
+        ["03", "Form JS is fleet-only", "Origin WP never includes the tag. 200 on /form-validation.js.", "Inject"],
+        ["04", "Apex is not WordPress", "No x-source blank. This is not Hillsborough (apex still WP).", "Cut over"]
+      ],
+      guardrails: [
+        ["05", "Do not scrape this URL", "x-source: kv means you would recopy yourself.", "No public HTTPS"],
+        ["07", "Do not cut over again", "No -IConfirmApexCutover on a site that is already fleet.", "No rerun"],
+        ["07", "Do not move to Server 1", "B1–7 live apex stays on fleet-static-worker.", "Locked split"],
+        ["07", "Wrong refresh scripts", "No MigrateSitesToFleet. No DeepAssetSync on fleet sites.", "Wrong store"]
+      ]
+    };
+
+    const railEl = document.getElementById("rail");
+    const notesEl = document.getElementById("notes");
+    const countEl = document.getElementById("structure-count");
+    const TOTAL = String(RAIL.length).padStart(2, "0");
+    let mode = "process";
+    let pinned = null;
+    let hover = null;
+
+    RAIL.forEach(([id, label, role]) => {
+      const li = document.createElement("li");
+      li.innerHTML = `<button class="structure-row" type="button" data-id="${id}"><span class="structure-node">${id}</span><span>${label}</span><span class="structure-role">${role}</span></button>`;
+      railEl.appendChild(li);
+    });
+
+    function currentId() {
+      return pinned || hover || document.querySelector(".website-section.is-highlighted")?.dataset.id || "01";
+    }
+
+    function renderNotes() {
+      notesEl.innerHTML = WHY[mode].map(([id, t, b, status]) =>
+        `<li class="annotation-card" data-id="${id}" tabindex="0"><span class="annotation-number">${id}</span><div><h3>${t}</h3><p>${b}</p><span class="annotation-status">${status}</span></div></li>`
+      ).join("");
+    }
+
+    function paint() {
+      const id = currentId();
+      countEl.textContent = id + " / " + TOTAL;
+      document.querySelectorAll(".structure-row").forEach((b) => b.classList.toggle("is-current", b.dataset.id === id));
+      document.querySelectorAll(".pin").forEach((p) => p.setAttribute("aria-pressed", p.dataset.id === id ? "true" : "false"));
+      document.querySelectorAll(".annotation-card").forEach((c) => c.classList.toggle("is-on", c.dataset.id === id));
+    }
+
+    function setMode(next) {
+      mode = next;
+      document.querySelectorAll(".mode-button").forEach((b) => b.setAttribute("aria-selected", b.dataset.mode === mode ? "true" : "false"));
+      renderNotes();
+      paint();
+    }
+
+    function show(id, lock) {
+      if (lock) pinned = pinned === id ? null : id;
+      else hover = id;
+      paint();
+    }
+
+    document.querySelectorAll(".pin").forEach((p) => {
+      p.addEventListener("mouseenter", () => show(p.dataset.id, false));
+      p.addEventListener("mouseleave", () => { hover = null; paint(); });
+      p.addEventListener("click", () => show(p.dataset.id, true));
+    });
+    railEl.addEventListener("mouseover", (e) => {
+      const b = e.target.closest("button");
+      if (b) show(b.dataset.id, false);
+    });
+    railEl.addEventListener("mouseleave", () => { hover = null; paint(); });
+    railEl.addEventListener("click", (e) => {
+      const b = e.target.closest("button");
+      if (!b) return;
+      show(b.dataset.id, true);
+      document.getElementById("s" + b.dataset.id).scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    notesEl.addEventListener("click", (e) => {
+      const card = e.target.closest(".annotation-card");
+      if (!card) return;
+      show(card.dataset.id, true);
+      document.getElementById("s" + card.dataset.id).scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    document.querySelectorAll(".mode-button").forEach((b) => b.addEventListener("click", () => setMode(b.dataset.mode)));
+
+    const io = new IntersectionObserver((entries) => {
+      const vis = entries.filter((e) => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (!vis) return;
+      document.querySelectorAll(".website-section").forEach((s) => s.classList.toggle("is-highlighted", s === vis.target));
+      if (!pinned && !hover) paint();
+    }, { rootMargin: "-18% 0px -55% 0px", threshold: [0.2, 0.5, 0.8] });
+    document.querySelectorAll(".website-section").forEach((s) => io.observe(s));
+
+    const frame = document.getElementById("live-frame");
+    const proof = document.getElementById("proof");
+    const openLive = document.getElementById("open-live");
+    const fallbackLink = document.getElementById("fallback-link");
+    const stage = document.getElementById("live-stage");
+
+    async function probe(host) {
+      proof.textContent = "Checking " + host + "…";
+      try {
+        const home = await fetch("/api/probe?host=" + encodeURIComponent(host) + "&path=/").then((r) => r.json());
+        const js = await fetch("/api/probe?host=" + encodeURIComponent(host) + "&path=/form-validation.js").then((r) => r.json());
+        const src = home.source || "missing";
+        const fh = home.fleetHost || "missing";
+        const jsBit = (js.status === 200) ? "form-validation.js 200" : "form-validation.js " + js.status;
+        proof.innerHTML =
+          "<span>" + home.status + "</span> · <b>x-source: " + src + "</b> · x-fleet-host: " + fh + " · " + jsBit;
+        if (src !== "kv" || !home.fleetHost) proof.querySelector("b")?.classList.add("miss");
+      } catch (err) {
+        proof.textContent = "Header check failed. Open the site in a new tab.";
+      }
+    }
+
+    function setHost(host) {
+      const href = "https://" + host + "/";
+      frame.src = href;
+      openLive.href = href;
+      fallbackLink.href = href;
+      document.querySelectorAll(".host-tab").forEach((b) => b.setAttribute("aria-selected", b.dataset.host === host ? "true" : "false"));
+      probe(host);
+    }
+
+    document.querySelectorAll(".host-tab").forEach((b) => {
+      b.addEventListener("click", () => setHost(b.dataset.host));
+    });
+
+    frame.addEventListener("error", () => stage.classList.add("is-blocked"));
+    setTimeout(() => {
+      try {
+        if (frame.contentDocument === null) { /* cross-origin: expected if loaded */ }
+      } catch (_) { /* ignore */ }
+    }, 2500);
+
+    setMode("process");
+    paint();
+    probe(APEX);
+  </script>
+</body>
+</html>

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CityThrive SOP — Convert, Preview, Apex Cutover, Rescrape</title>
+  <style>
+    :root {
+      --navy: #0f3460;
+      --navy-2: #1a4a7a;
+      --ink: #1c2430;
+      --muted: #5c6773;
+      --line: #d5dde6;
+      --paper: #ffffff;
+      --wash: #f4f7fa;
+      --gold: #b8860b;
+      --ok: #1b7a4a;
+      --warn-bg: #fff8e8;
+      --warn-bd: #e6d19a;
+      --no-bg: #fdeeee;
+      --no-bd: #e3b6b6;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--wash); color: var(--ink); }
+    body {
+      font: 11pt/1.45 "Calibri", "Segoe UI", system-ui, sans-serif;
+    }
+    .page {
+      max-width: 210mm;
+      margin: 24px auto 48px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      padding: 18mm 16mm 16mm;
+    }
+    .cover-bar {
+      height: 6px;
+      background: var(--navy);
+      margin: -18mm -16mm 14mm;
+    }
+    .kicker {
+      font-size: 10pt;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 700;
+      margin: 0 0 6px;
+    }
+    h1 {
+      font-size: 22pt;
+      line-height: 1.2;
+      color: var(--navy);
+      margin: 0 0 8px;
+      font-weight: 700;
+    }
+    .subtitle {
+      font-size: 12pt;
+      color: var(--muted);
+      margin: 0 0 18px;
+    }
+    .doc-meta {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10pt;
+      margin: 0 0 18px;
+    }
+    .doc-meta th, .doc-meta td {
+      border: 1px solid var(--line);
+      padding: 6px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    .doc-meta th {
+      width: 28%;
+      background: var(--navy);
+      color: #fff;
+      font-weight: 600;
+    }
+    h2 {
+      font-size: 13.5pt;
+      color: var(--navy);
+      border-bottom: 2px solid var(--navy);
+      padding-bottom: 4px;
+      margin: 22px 0 10px;
+      page-break-after: avoid;
+    }
+    h3 {
+      font-size: 11.5pt;
+      color: var(--navy-2);
+      margin: 16px 0 6px;
+      page-break-after: avoid;
+    }
+    p { margin: 0 0 8px; }
+    ol, ul { margin: 0 0 10px; padding-left: 22px; }
+    li { margin: 0 0 4px; }
+    table.data {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10pt;
+      margin: 8px 0 14px;
+    }
+    table.data th, table.data td {
+      border: 1px solid var(--line);
+      padding: 6px 8px;
+      vertical-align: top;
+      text-align: left;
+    }
+    table.data th {
+      background: var(--navy);
+      color: #fff;
+      font-weight: 600;
+    }
+    table.data tr:nth-child(even) td { background: #f7fafc; }
+    code, .cmd {
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 8.5pt;
+    }
+    pre {
+      background: #0f2138;
+      color: #e8eef5;
+      padding: 10px 12px;
+      font: 8pt/1.4 Consolas, "Courier New", monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin: 8px 0 12px;
+      border-left: 3px solid var(--gold);
+    }
+    .callout {
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      margin: 10px 0 14px;
+      background: var(--wash);
+      page-break-inside: avoid;
+    }
+    .callout.warn { background: var(--warn-bg); border-color: var(--warn-bd); }
+    .callout.no { background: var(--no-bg); border-color: var(--no-bd); }
+    .callout b { display: block; margin-bottom: 4px; color: var(--navy); }
+    .toc a { color: var(--navy); text-decoration: none; }
+    .toc td { padding: 3px 0; }
+    .toc .num { width: 28px; color: var(--muted); }
+    .footer-note {
+      margin-top: 28px;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+      font-size: 9pt;
+      color: var(--muted);
+    }
+    .check li { list-style: none; margin-left: -8px; }
+    .check li::before { content: "☐  "; color: var(--navy); }
+    @media print {
+      body { background: #fff; }
+      .page {
+        max-width: none;
+        margin: 0;
+        border: 0;
+        padding: 0;
+      }
+      .cover-bar { margin: 0 0 12mm; }
+      h2 { page-break-before: auto; }
+      pre, table, .callout { page-break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+    @page {
+      size: A4;
+      margin: 16mm 16mm 18mm 16mm;
+      @bottom-left {
+        content: "CT-SOP-FLEET-CONVERT-2026-08  ·  v1.0";
+        font-size: 8pt;
+        color: #667;
+      }
+      @bottom-right {
+        content: "Page " counter(page);
+        font-size: 8pt;
+        color: #667;
+      }
+    }
+  </style>
+</head>
+<body>
+  <article class="page">
+    <div class="cover-bar"></div>
+    <p class="kicker">CityThrive  ·  Fleet static operations</p>
+    <h1>Standard Operating Procedure</h1>
+    <p class="subtitle">Convert WordPress to fleet static — <code>static.*</code> preview, apex cutover, and origin-IP rescrape</p>
+
+    <table class="doc-meta">
+      <tr><th>Document ID</th><td>CT-SOP-FLEET-CONVERT-2026-08</td></tr>
+      <tr><th>Version / effective</th><td>1.0  ·  28 August 2026</td></tr>
+      <tr><th>Owners</th><td>John (conversion / Cloudflare) · Usman (WordPress origin) · Sean (QA)</td></tr>
+      <tr><th>Audience</th><td>Conversion operators, WordPress, QA, and backups covering when John is out</td></tr>
+      <tr><th>Companion files</th><td>Markdown: SOP-CONVERT-PREVIEW-CUTOVER-RESCRAPE.md · this HTML · PDF of this document</td></tr>
+    </table>
+
+    <div class="callout warn">
+      <b>Source of truth</b>
+      WordPress on the hosting IP is always the source of truth. Static must match the current WP snapshot, never an old KV copy. Never scrape public HTTPS on a host that already returns <code>x-source: kv</code> — that recopies stale static (including old popups).
+    </div>
+
+    <h2>Contents</h2>
+    <table class="toc" style="width:100%;border-collapse:collapse;font-size:10.5pt;margin-bottom:8px;">
+      <tr><td class="num">1.</td><td><a href="#s1">Purpose</a></td></tr>
+      <tr><td class="num">2.</td><td><a href="#s2">Architecture</a></td></tr>
+      <tr><td class="num">3.</td><td><a href="#s3">Origin IPs and Workers</a></td></tr>
+      <tr><td class="num">4.</td><td><a href="#s4">Path A — New convert (apex still WordPress)</a></td></tr>
+      <tr><td class="num">5.</td><td><a href="#s5">Path B — Rescrape (already static)</a></td></tr>
+      <tr><td class="num">6.</td><td><a href="#s6">Path C — Edit loop</a></td></tr>
+      <tr><td class="num">7.</td><td><a href="#s7">Form validation</a></td></tr>
+      <tr><td class="num">8.</td><td><a href="#s8">Stay-WordPress</a></td></tr>
+      <tr><td class="num">9.</td><td><a href="#s9">Do not</a></td></tr>
+      <tr><td class="num">10.</td><td><a href="#s10">Go-live checklist</a></td></tr>
+    </table>
+
+    <h2 id="s1">1. Purpose</h2>
+    <p>This SOP is the operating workflow for fleet static. It replaces converting straight onto live apex for new sites. Use it for three jobs:</p>
+    <ol>
+      <li><b>New convert</b> — live WordPress → <code>static.{domain}</code> preview → apex static after QA.</li>
+      <li><b>Rescrape</b> — refresh an already-static site from current WordPress (popups, copy, pages).</li>
+      <li><b>Edit loop</b> — roll apex back to WordPress, edit, rescrape, restore fleet routes.</li>
+    </ol>
+    <p>Static is a snapshot of the public frontend (HTML, CSS, JS, images, metadata, robots, sitemaps). It is not WordPress. PHP, Elementor editor, and plugin runtimes do not run on Cloudflare. The page can still look like WordPress; that is expected.</p>
+
+    <h2 id="s2">2. Architecture</h2>
+    <pre>Visitor request
+        │
+        ▼
+  fleet-static-worker              Batches 1–7 live apex
+  fleet-static-worker-server-1     New batches after B1–7
+        │
+        ├── HTML_FLEET (KV)              {host}:html:{path}
+        └── fleet-static-assets (R2)     {host}:asset:{path}
+
+Preview keys use static.{domain}:html:… and static.{domain}:asset:…
+Do not move Batches 1–7 live apex onto fleet-static-worker-server-1.</pre>
+    <p>Each domain has its own key prefix. Sites do not share HTML or <code>wp-content</code>.</p>
+    <h3>Proof the public host is on fleet</h3>
+    <pre>HTTP 200
+x-source: kv
+x-fleet-host: example.com</pre>
+    <p><code>x-source: kv</code> without <code>x-fleet-host</code> means the old <b>per-site Worker</b>, not the fleet. Treat that as “not on fleet” for cutover and form-validation on live apex.</p>
+
+    <h2 id="s3">3. Origin IPs and Workers</h2>
+    <table class="data">
+      <thead>
+        <tr>
+          <th>Lane</th>
+          <th>Worker</th>
+          <th>WordPress origin IP</th>
+          <th>Use for</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Server 2</td>
+          <td><code>fleet-static-worker</code></td>
+          <td><code>174.136.29.214</code></td>
+          <td>Batches 1–7 live apex</td>
+        </tr>
+        <tr>
+          <td>Server 1</td>
+          <td><code>fleet-static-worker-server-1</code></td>
+          <td><code>165.140.157.43</code></td>
+          <td>New batches after B1–7</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Fetch origin with <code>curl --resolve {domain}:443:{origin-ip}</code> (and the www host). If this PC cannot reach that IP, stop. Do not fall back to public HTTPS on a fleet site.</p>
+    <p>Both Workers share <code>HTML_FLEET</code> and <code>fleet-static-assets</code>.</p>
+
+    <h2 id="s4">4. Path A — New convert (apex still WordPress)</h2>
+    <ol>
+      <li>Confirm the domain is not stay-WordPress. Take a WPVivid backup. Fix pages, forms, and CallRail on <b>live WordPress</b>.</li>
+      <li>Scrape WordPress via the correct origin IP into <code>HTML_FLEET</code> + <code>fleet-static-assets</code>.</li>
+      <li>Attach <b><code>static.{domain}/*</code> only</b>. Apex and www stay on WordPress.</li>
+      <li>QA <code>https://static.{domain}/</code> against live WP: eyeball, 26-check, forms, images, CallRail.</li>
+      <li>After sign-off, cut over <b>apex + www</b> to the same fleet Worker (<code>-IConfirmApexCutover</code>).</li>
+      <li>Inject <code>form-validation.js</code>. Origin WP never includes this tag.</li>
+      <li>Verify live: <code>200</code>, <code>x-source: kv</code>, <code>x-fleet-host</code>, <code>/form-validation.js</code> HTTP 200.</li>
+    </ol>
+    <pre>cd "C:\Users\&lt;You&gt;\Downloads\fleet-static-preview"
+
+# Preview only — apex stays WordPress
+powershell -ExecutionPolicy Bypass -File .\scripts\Invoke-PreviewStaticOnFleet.ps1 `
+  -SitesCsv .\sites\YOUR.csv `
+  -OriginIp 174.136.29.214 `
+  -WorkerName fleet-static-worker
+
+# Server 1 preview
+# -OriginIp 165.140.157.43 -WorkerName fleet-static-worker-server-1
+
+# After QA
+powershell -ExecutionPolicy Bypass -File .\scripts\Invoke-CutoverApexToFleet.ps1 `
+  -SitesCsv .\sites\YOUR.csv -IConfirmApexCutover
+
+powershell -ExecutionPolicy Bypass -File .\scripts\Invoke-InjectFleetFormValidation.ps1 `
+  -SitesCsv .\sites\YOUR.csv</pre>
+    <div class="callout">
+      <b>Adam API</b>
+      <code>POST …/provision-originless</code> and <code>/scrape</code> with <code>"fleet": true</code> attach <b>preview only</b> (<code>static.{domain}/*</code>). The API does not take an origin IP and does not touch apex/www. Omit <code>workerName</code> only for Batches 1–7. New batches must send <code>"workerName":"fleet-static-worker-server-1"</code>. Apex cutover stays on the conversion operator.
+    </div>
+
+    <h2 id="s5">5. Path B — Rescrape (already static)</h2>
+    <p>Use when WordPress already has the correct content (for example popups fixed in the database) and the public site is, or will be, fleet.</p>
+    <table class="data">
+      <thead>
+        <tr><th>Change type</th><th>Scrape mode</th><th>Routes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>HTML, popup, or copy only</td>
+          <td>HTML-only (<code>-SkipAssets</code>), then inject form-validation</td>
+          <td><code>-SkipRoutes</code> if apex is already fleet</td>
+        </tr>
+        <tr>
+          <td>Theme, CSS, JS, or media</td>
+          <td>Full HTML + R2, then inject form-validation</td>
+          <td>Same</td>
+        </tr>
+        <tr>
+          <td>Apex not on fleet yet</td>
+          <td>Scrape into fleet KV/R2 first</td>
+          <td>Cut over apex only after QA (Path A step 5)</td>
+        </tr>
+      </tbody>
+    </table>
+    <pre>cd "C:\Users\&lt;You&gt;\Downloads\shared-apex-static"
+
+powershell -ExecutionPolicy Bypass -File .\scripts\Invoke-WpOriginToFleet.ps1 `
+  -SitesCsv .\reports\YOUR.csv `
+  -HostingIp 174.136.29.214 `
+  -WorkerName fleet-static-worker `
+  -SkipRoutes -SkipAssets
+
+# Server 1
+powershell -ExecutionPolicy Bypass -File .\scripts\Invoke-WpOriginToFleet.ps1 `
+  -SitesCsv .\reports\YOUR.csv `
+  -HostingIp 165.140.157.43 `
+  -WorkerName fleet-static-worker-server-1 `
+  -SkipRoutes -SkipAssets
+
+powershell -ExecutionPolicy Bypass -File `
+  "C:\Users\&lt;You&gt;\Downloads\fleet-static-preview\scripts\Invoke-InjectFleetFormValidation.ps1" `
+  -SitesCsv .\reports\YOUR.csv</pre>
+    <p>Popup re-export wrapper (selects origin IP from lane):</p>
+    <pre>powershell -ExecutionPolicy Bypass -File .\scripts\Invoke-PopupReexportFromOrigin.ps1 `
+  -Lane s2 -SkipAssets -InjectFormValidation
+# -Lane s1  →  165.140.157.43 + fleet-static-worker-server-1</pre>
+    <div class="callout warn">
+      <b>After every HTML scrape</b>
+      Re-inject <code>/form-validation.js</code>. The WordPress snapshot never contains the fleet snippet. Skipping this leaves native HTML5 validation on popups.
+    </div>
+
+    <h2 id="s6">6. Path C — Edit loop</h2>
+    <ol>
+      <li>Rollback Worker routes so apex hits WordPress. Keep KV and R2.</li>
+      <li>Edit and verify on live WordPress.</li>
+      <li>Rescrape using Path B via the hosting IP (not public HTTPS).</li>
+      <li>Restore fleet routes: B1–7 → <code>fleet-static-worker</code>; new batches → <code>fleet-static-worker-server-1</code>.</li>
+      <li>Verify <code>200</code> / <code>kv</code> / <code>x-fleet-host</code> and form-validation.</li>
+    </ol>
+    <p>Do not delete WordPress until QA has passed and a lead says so. Keep old per-site Workers at least 48 hours after a fleet cutover.</p>
+
+    <h2 id="s7">7. Form validation</h2>
+    <p>The delegated script (<code>form-validation.js</code> with document-level click and submit listeners) covers the <b>main form and Elementor popups</b> (GET IN TOUCH / Free Estimate). Native HTML5 “Please fill in this field” means our script did not intercept.</p>
+    <table class="data">
+      <thead>
+        <tr><th>Site type</th><th>Who injects</th><th>File to use</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Remaining WordPress</td>
+          <td>Usman</td>
+          <td><code>Downloads\fleet\assets\form-validation.js</code></td>
+        </tr>
+        <tr>
+          <td>Fleet / static</td>
+          <td>Conversion via Cloudflare KV + R2</td>
+          <td>Same file, <code>Invoke-InjectFleetFormValidation.ps1</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Do not send copies from <code>Downloads\form-validation.js</code> or <code>static-conversion</code> — those lack popup listeners.</p>
+
+    <h2 id="s8">8. Stay-WordPress (never convert)</h2>
+    <p>Hard excludes:</p>
+    <ul>
+      <li><code>roundrockfoundationrepairexperts.com</code></li>
+      <li><code>solidfoundationrepairofsavannah.com</code></li>
+      <li><code>solidfoundationrepairoflakeworth.com</code></li>
+      <li><code>azaleaparkfoundationrepair.com</code></li>
+    </ul>
+    <p>Full list: <code>static-conversion\reports\batch1-7-convert-20260808-173900\exclude-stay-wordpress.txt</code></p>
+
+    <h2 id="s9">9. Do not</h2>
+    <table class="data">
+      <thead>
+        <tr><th>Do not</th><th>Why</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Scrape public HTTPS on a live fleet site</td>
+          <td>Recopies old KV, including stale popups</td>
+        </tr>
+        <tr>
+          <td>Use <code>Invoke-MigrateSitesToFleet.ps1</code> to refresh content</td>
+          <td>Copies stale per-site KV</td>
+        </tr>
+        <tr>
+          <td>Use <code>Invoke-DeepAssetSync.ps1</code> on fleet sites</td>
+          <td>Writes <code>{domain}-worker</code> keys, not <code>{host}:html:</code> / <code>{host}:asset:</code></td>
+        </tr>
+        <tr>
+          <td>Use Adam <code>/provision-originless</code> to refresh live fleet</td>
+          <td>No origin IP; it fetches the public hostname</td>
+        </tr>
+        <tr>
+          <td>Omit <code>workerName</code> on a new-batch domain</td>
+          <td>Attaches <code>static.*</code> to server 2</td>
+        </tr>
+        <tr>
+          <td>Move B1–7 live apex to <code>fleet-static-worker-server-1</code></td>
+          <td>Locked Worker split</td>
+        </tr>
+        <tr>
+          <td>Skip form-validation inject after an HTML scrape</td>
+          <td>Origin WP never has the tag</td>
+        </tr>
+        <tr>
+          <td>Store rating SVGs as <code>application/xml</code></td>
+          <td>Broken <code>&lt;img&gt;</code> badges; must be <code>image/svg+xml</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2 id="s10">10. Go-live checklist</h2>
+    <ul class="check">
+      <li>Correct origin IP for the lane (Server 2 <code>174.136.29.214</code> or Server 1 <code>165.140.157.43</code>)</li>
+      <li>Stay-WordPress exclude checked</li>
+      <li><code>static.*</code> QA vs origin (new converts) or SkipRoutes confirmed (rescrape)</li>
+      <li>Homepage <code>200</code> + <code>x-source: kv</code> + <code>x-fleet-host: {domain}</code></li>
+      <li><code>/form-validation.js</code> HTTP 200 and snippet present in HTML</li>
+      <li>Main form and popup validate with our script (not HTML5-only)</li>
+      <li>Images <code>x-source: r2</code> after a full scrape, or existing R2 left in place after HTML-only</li>
+      <li>Cache purged; hard-refresh verified</li>
+    </ul>
+
+    <h3>Related scripts</h3>
+    <table class="data">
+      <thead>
+        <tr><th>Script</th><th>Folder</th><th>Job</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>Invoke-PreviewStaticOnFleet.ps1</code></td>
+          <td>fleet-static-preview</td>
+          <td>WP → fleet under <code>static.*</code> only</td>
+        </tr>
+        <tr>
+          <td><code>Invoke-CutoverApexToFleet.ps1</code></td>
+          <td>fleet-static-preview</td>
+          <td>Apex + www after QA</td>
+        </tr>
+        <tr>
+          <td><code>Invoke-WpOriginToFleet.ps1</code></td>
+          <td>shared-apex-static</td>
+          <td>Origin-IP scrape into HTML_FLEET / R2</td>
+        </tr>
+        <tr>
+          <td><code>Invoke-InjectFleetFormValidation.ps1</code></td>
+          <td>fleet-static-preview</td>
+          <td>R2 JS + KV HTML snippet</td>
+        </tr>
+        <tr>
+          <td><code>Invoke-PopupReexportFromOrigin.ps1</code></td>
+          <td>shared-apex-static</td>
+          <td>Popup list; picks Server 1 vs 2 IP</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="footer-note">
+      CityThrive / Michael Cloudflare account. Confidential — internal operations.
+      Architecture SOP (13 Aug 2026): SOP-FLEET-STATIC-WORKFLOW.md.
+      This document is the convert / preview / cutover / rescrape procedure effective 28 August 2026.
+    </p>
+  </article>
+</body>
+</html>

@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fleet conversion process guide · CityThrive</title>
+  <style>
+    :root {
+      --ink: #1c1917;
+      --muted: #57534e;
+      --line: #d6d3d1;
+      --paper: #f5f5f4;
+      --card: #ffffff;
+      --chrome: #292524;
+      --accent: #ea580c;
+      --accent-2: #c2410c;
+      --pin: #2563eb;
+      --pin-on: #1d4ed8;
+      --ok: #15803d;
+      --wp: #2271b1;
+      --kv: #0f766e;
+      --fail: #b91c1c;
+      --grid: #e7e5e4;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Calibri, system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(transparent 23px, var(--grid) 24px) 0 0 / 24px 24px,
+        linear-gradient(90deg, transparent 23px, var(--grid) 24px) 0 0 / 24px 24px,
+        #fafaf9;
+      line-height: 1.45;
+    }
+    .wrap { max-width: 1280px; margin: 0 auto; padding: 28px 22px 80px; }
+    .kicker {
+      margin: 0 0 6px;
+      font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+      font-weight: 700; color: var(--accent);
+    }
+    h1 { margin: 0 0 8px; font-size: 30px; letter-spacing: -0.03em; line-height: 1.15; }
+    .lede { margin: 0 0 16px; color: var(--muted); max-width: 78ch; font-size: 15px; }
+    .hint {
+      display: inline-block; background: #fff7ed; border: 1px solid #fed7aa;
+      color: #9a3412; font-size: 13px; padding: 8px 12px; margin: 0 0 18px;
+    }
+    .modes { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 22px; }
+    .modes button {
+      border: 1px solid var(--line); background: var(--card); color: var(--ink);
+      padding: 8px 14px; font: 650 13px/1 inherit; cursor: pointer;
+    }
+    .modes button[aria-pressed="true"] {
+      background: var(--chrome); color: #fff; border-color: var(--chrome);
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 280px;
+      gap: 18px;
+      align-items: start;
+    }
+    .chrome {
+      background: var(--chrome);
+      border-radius: 10px 10px 0 0;
+      padding: 10px 12px 0;
+    }
+    .dots { display: flex; gap: 6px; margin-bottom: 8px; }
+    .dots i { width: 10px; height: 10px; border-radius: 50%; display: block; background: #57534e; }
+    .dots i:nth-child(1) { background: #f87171; }
+    .dots i:nth-child(2) { background: #fbbf24; }
+    .dots i:nth-child(3) { background: #4ade80; }
+    .urlbar {
+      background: #44403c; color: #e7e5e4; font: 12px/1.3 Consolas, monospace;
+      padding: 7px 10px; border-radius: 6px 6px 0 0;
+    }
+    .stage {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-top: 0;
+    }
+    .sec {
+      position: relative;
+      padding: 28px 56px 28px 28px;
+      border-bottom: 1px solid var(--line);
+    }
+    .sec:last-child { border-bottom: 0; }
+    .sec.hero {
+      background: #292524;
+      color: #fafaf9;
+    }
+    .sec.hero .muted { color: #a8a29e; }
+    .num {
+      font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+      font-weight: 700; color: var(--accent); margin: 0 0 6px;
+    }
+    .sec.hero .num { color: #fdba74; }
+    .sec h2 { margin: 0 0 8px; font-size: 22px; letter-spacing: -0.02em; }
+    .sec p { margin: 0 0 10px; }
+    .muted { color: var(--muted); font-size: 14px; }
+    .checks { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; margin: 12px 0 0; padding: 0; list-style: none; }
+    .checks li { font-size: 14px; }
+    .checks li::before { content: "▸ "; color: var(--accent); font-weight: 700; }
+    .split { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 16px; align-items: start; }
+    .card {
+      background: #fff; border: 1px solid var(--line); padding: 14px 16px;
+    }
+    .sec.hero .card { background: #fff; color: var(--ink); }
+    .card h3 { margin: 0 0 8px; font-size: 15px; }
+    .flow {
+      display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13px; font-weight: 650;
+    }
+    .chip {
+      background: #f5f5f4; border: 1px solid var(--line); padding: 7px 10px;
+    }
+    .chip.wp { background: #eff6ff; border-color: #bfdbfe; color: var(--wp); }
+    .chip.kv { background: #f0fdfa; border-color: #99f6e4; color: var(--kv); }
+    .chip.live { background: #fff7ed; border-color: #fed7aa; color: var(--accent-2); }
+    .chip.no { background: #fef2f2; border-color: #fecaca; color: var(--fail); }
+    .arrow { color: var(--muted); }
+    .table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .table th, .table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    .table th { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+    .pin {
+      position: absolute; right: 14px; top: 26px;
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 2px solid #fff; background: var(--pin); color: #fff;
+      font: 700 12px/30px inherit; text-align: center; cursor: pointer;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+    }
+    .pin:hover, .pin[aria-pressed="true"], .sec.is-active .pin { background: var(--pin-on); }
+    .rail {
+      position: sticky; top: 16px;
+      background: var(--card); border: 1px solid var(--line); padding: 12px 10px 14px;
+    }
+    .rail h2 { margin: 0 0 4px; font-size: 13px; }
+    .rail .count { font-size: 12px; color: var(--muted); margin: 0 0 10px; }
+    .rail ol { list-style: none; margin: 0; padding: 0; }
+    .rail button {
+      width: 100%; text-align: left; border: 0; background: transparent;
+      padding: 7px 8px; cursor: pointer; font: 13px/1.25 inherit;
+      display: grid; grid-template-columns: 28px 1fr auto; gap: 6px; align-items: baseline;
+      color: var(--ink);
+    }
+    .rail button:hover, .rail button.is-on { background: #fff7ed; }
+    .rail .n { font-weight: 700; color: var(--pin); font-size: 12px; }
+    .rail .verb { font-size: 11px; color: var(--muted); }
+    .note {
+      position: sticky; top: 16px; margin-top: 12px;
+      background: var(--chrome); color: #fafaf9; padding: 14px 16px; min-height: 140px;
+    }
+    .note .tag {
+      font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: #fdba74; font-weight: 700; margin: 0 0 6px;
+    }
+    .note h3 { margin: 0 0 8px; font-size: 16px; }
+    .note p { margin: 0; color: #d6d3d1; font-size: 13.5px; }
+    .why { margin-top: 28px; background: var(--card); border: 1px solid var(--line); padding: 18px 20px 8px; }
+    .why h2 { margin: 0 0 6px; font-size: 18px; }
+    .why-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
+    .why-item { border: 1px solid var(--line); padding: 12px 14px; }
+    .why-item .n { font-size: 11px; font-weight: 700; color: var(--pin); }
+    .why-item h3 { margin: 4px 0 6px; font-size: 15px; }
+    .why-item p { margin: 0; font-size: 13.5px; color: var(--muted); }
+    pre {
+      margin: 10px 0 0; background: #1c1917; color: #e7e5e4;
+      padding: 10px 12px; font: 11.5px/1.4 Consolas, monospace;
+      overflow-x: auto; white-space: pre-wrap;
+    }
+    .excludes { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .excludes span { background: #fef2f2; border: 1px solid #fecaca; color: var(--fail); font-size: 12px; padding: 4px 8px; }
+    footer { margin-top: 22px; font-size: 12px; color: var(--muted); }
+    @media (max-width: 980px) {
+      .layout, .split, .checks, .why-grid { grid-template-columns: 1fr; }
+      .pin { right: 8px; top: 16px; }
+    }
+    @media print {
+      body { background: #fff; }
+      .rail, .note, .hint, .modes { display: none; }
+      .layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <p class="kicker">CityThrive · Fleet static operations · 3 Sep 2026</p>
+    <h1>Fleet conversion process guide</h1>
+    <p class="lede">
+      Same interaction as the landing-page template guide: hover a numbered pin or a rail row
+      for the callout. Click to keep it open. WordPress on the hosting IP is the source of truth.
+      Static is a snapshot — not wp-admin.
+    </p>
+    <p class="hint">Hover a numbered pin or timeline row to reveal its annotation. The rail tracks the stage in view.</p>
+    <div class="modes" role="tablist" aria-label="Annotation mode">
+      <button type="button" data-mode="process" aria-pressed="true">Process</button>
+      <button type="button" data-mode="owners" aria-pressed="false">Owners</button>
+      <button type="button" data-mode="guardrails" aria-pressed="false">Guardrails</button>
+    </div>
+
+    <div class="layout">
+      <div>
+        <div class="chrome">
+          <div class="dots" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div class="urlbar">fleet / convert · preview static.* · apex cutover · origin-IP rescrape</div>
+        </div>
+        <div class="stage" id="stage">
+
+          <section class="sec hero" id="s01" data-id="01">
+            <button class="pin" type="button" data-id="01" aria-label="Show annotation for source of truth">01</button>
+            <p class="num">01 · Source of truth</p>
+            <h2>Live WordPress on the hosting IP — never public static</h2>
+            <p class="muted">Fix copy, popups, forms, and CallRail on WP first. Then scrape. If apex already returns <code>x-source: kv</code>, do not scrape that public HTTPS — you would recopy stale KV.</p>
+            <div class="split" style="margin-top:16px">
+              <div>
+                <div class="flow">
+                  <span class="chip wp">WordPress · origin IP</span>
+                  <span class="arrow">→</span>
+                  <span class="chip kv">HTML_FLEET + R2</span>
+                  <span class="arrow">→</span>
+                  <span class="chip live">Visitor sees fleet</span>
+                </div>
+              </div>
+              <div class="card">
+                <h3>Proof the public host is fleet</h3>
+                <p class="muted" style="margin:0">HTTP 200 · <code>x-source: kv</code> · <code>x-fleet-host: domain</code></p>
+                <p class="muted" style="margin:8px 0 0"><code>x-source: kv</code> without <code>x-fleet-host</code> is the old per-site Worker.</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="sec" id="s02" data-id="02">
+            <button class="pin" type="button" data-id="02" aria-label="Show annotation for workers">02</button>
+            <p class="num">02 · Workers &amp; storage</p>
+            <h2>Two Workers, one KV, one R2</h2>
+            <table class="table">
+              <thead><tr><th>Lane</th><th>Worker</th><th>Origin IP</th></tr></thead>
+              <tbody>
+                <tr><td>Server 2 · Batches 1–7 live apex</td><td><code>fleet-static-worker</code></td><td><code>174.136.29.214</code></td></tr>
+                <tr><td>Server 1 · new batches</td><td><code>fleet-static-worker-server-1</code></td><td><code>165.140.157.43</code></td></tr>
+              </tbody>
+            </table>
+            <p class="muted" style="margin-top:10px">Keys: <code>{host}:html:{path}</code> and <code>{host}:asset:{path}</code>. Preview uses <code>static.{domain}:…</code>. Do not move B1–7 live apex onto server 1.</p>
+          </section>
+
+          <section class="sec" id="s03" data-id="03">
+            <button class="pin" type="button" data-id="03" aria-label="Show annotation for path A">03</button>
+            <p class="num">03 · Path A · New convert</p>
+            <h2>Apex stays WordPress until QA signs off</h2>
+            <div class="flow" style="margin-top:8px">
+              <span class="chip wp">client.com WP</span>
+              <span class="arrow">→</span>
+              <span class="chip kv">scrape via origin IP</span>
+              <span class="arrow">→</span>
+              <span class="chip">static.client.com</span>
+              <span class="arrow">→</span>
+              <span class="chip live">apex + www after QA</span>
+            </div>
+            <ul class="checks">
+              <li>Stay-WP exclude checked · WPVivid backup</li>
+              <li>Attach <code>static.{domain}/*</code> only</li>
+              <li>Adam <code>/provision-originless</code> is preview-only</li>
+              <li>Cutover needs <code>-IConfirmApexCutover</code></li>
+            </ul>
+            <pre>cd fleet\preview
+powershell -File .\scripts\Invoke-PreviewStaticOnFleet.ps1 -SitesCsv .\sites\YOUR.csv -OriginIp 174.136.29.214 -WorkerName fleet-static-worker
+# Server 1: -OriginIp 165.140.157.43 -WorkerName fleet-static-worker-server-1</pre>
+          </section>
+
+          <section class="sec" id="s04" data-id="04">
+            <button class="pin" type="button" data-id="04" aria-label="Show annotation for QA">04</button>
+            <p class="num">04 · QA on static.*</p>
+            <h2>Compare the clone to live WordPress, not to an old KV copy</h2>
+            <ul class="checks">
+              <li>Eyeball homepage, inner pages, popup</li>
+              <li>26-check portfolio audit</li>
+              <li>Images, CSS, JS from R2</li>
+              <li>Forms + CallRail vs origin WP</li>
+            </ul>
+            <p class="muted" style="margin-top:12px">Sean signs off. Do not cut over apex because the scrape “looked fine in the terminal.”</p>
+          </section>
+
+          <section class="sec" id="s05" data-id="05">
+            <button class="pin" type="button" data-id="05" aria-label="Show annotation for cutover">05</button>
+            <p class="num">05 · Apex cutover</p>
+            <h2>Same Worker. Apex + www. Keep the old per-site Worker 48 hours.</h2>
+            <pre>powershell -File .\scripts\Invoke-CutoverApexToFleet.ps1 -SitesCsv .\sites\YOUR.csv -IConfirmApexCutover</pre>
+            <p class="muted" style="margin-top:10px">Adam’s API does not touch apex. We do.</p>
+          </section>
+
+          <section class="sec" id="s06" data-id="06">
+            <button class="pin" type="button" data-id="06" aria-label="Show annotation for form JS">06</button>
+            <p class="num">06 · Form validation</p>
+            <h2>Origin WP never has the fleet tag — inject after every HTML scrape</h2>
+            <table class="table">
+              <thead><tr><th>Site type</th><th>Who</th><th>File</th></tr></thead>
+              <tbody>
+                <tr><td>Remaining WordPress</td><td>Usman</td><td>mu-plugin <code>citythrive-form-validation.js</code> (Elementor) or <code>…-cf7-wpforms.js</code></td></tr>
+                <tr><td>Fleet / static</td><td>John</td><td><code>/form-validation.js</code> or <code>/form-validation-cf7-wpforms.js</code> via Cloudflare</td></tr>
+              </tbody>
+            </table>
+            <p class="muted" style="margin-top:10px">Use <code>fleet\assets\</code> copies. Not <code>Downloads\form-validation.js</code> (missing popup listeners).</p>
+          </section>
+
+          <section class="sec" id="s07" data-id="07">
+            <button class="pin" type="button" data-id="07" aria-label="Show annotation for rescrape">07</button>
+            <p class="num">07 · Path B · Rescrape</p>
+            <h2>Already static: scrape WP through the hosting IP, skip public HTTPS</h2>
+            <ul class="checks">
+              <li>HTML / popup / copy only → <code>-SkipAssets</code></li>
+              <li>Theme or media changed → full HTML + R2</li>
+              <li>Apex already fleet → <code>-SkipRoutes</code></li>
+              <li>Re-inject form-validation after HTML</li>
+            </ul>
+            <pre>cd fleet\worker
+powershell -File .\scripts\Invoke-WpOriginToFleet.ps1 -SitesCsv .\reports\YOUR.csv -HostingIp 174.136.29.214 -SkipRoutes -SkipAssets</pre>
+          </section>
+
+          <section class="sec" id="s08" data-id="08">
+            <button class="pin" type="button" data-id="08" aria-label="Show annotation for edit loop">08</button>
+            <p class="num">08 · Path C · Edit loop</p>
+            <h2>Need the CMS? Rollback apex to WordPress. Keep KV and R2.</h2>
+            <div class="flow" style="margin-top:8px">
+              <span class="chip live">fleet apex</span>
+              <span class="arrow">→</span>
+              <span class="chip wp">rollback routes</span>
+              <span class="arrow">→</span>
+              <span class="chip wp">edit on WP</span>
+              <span class="arrow">→</span>
+              <span class="chip kv">rescrape origin IP</span>
+              <span class="arrow">→</span>
+              <span class="chip live">restore fleet</span>
+            </div>
+            <p class="muted" style="margin-top:12px">aaPanel <code>dev.</code> is optional staging. Default for an already-fleet site is Path C, not typing into KV.</p>
+          </section>
+
+          <section class="sec" id="s09" data-id="09">
+            <button class="pin" type="button" data-id="09" aria-label="Show annotation for stay WordPress">09</button>
+            <p class="num">09 · Stay-WordPress</p>
+            <h2>Never convert or fleet-migrate these four</h2>
+            <div class="excludes">
+              <span>roundrockfoundationrepairexperts.com</span>
+              <span>solidfoundationrepairofsavannah.com</span>
+              <span>solidfoundationrepairoflakeworth.com</span>
+              <span>azaleaparkfoundationrepair.com</span>
+            </div>
+          </section>
+
+          <section class="sec" id="s10" data-id="10">
+            <button class="pin" type="button" data-id="10" aria-label="Show annotation for proof">10</button>
+            <p class="num">10 · Proof after go-live</p>
+            <h2>Headers, form JS, images, hard-refresh</h2>
+            <ul class="checks">
+              <li>Homepage 200 + kv + x-fleet-host</li>
+              <li><code>/form-validation.js</code> 200 (or CF7 file)</li>
+              <li>Main form and popup validate with our script</li>
+              <li>SVGs served as <code>image/svg+xml</code>, never <code>application/xml</code></li>
+            </ul>
+          </section>
+
+          <section class="sec" id="s11" data-id="11">
+            <button class="pin" type="button" data-id="11" aria-label="Show annotation for do not">11</button>
+            <p class="num">11 · Do not</p>
+            <h2>These commands recopy stale static or land on the wrong Worker</h2>
+            <table class="table">
+              <thead><tr><th>Do not</th><th>Why</th></tr></thead>
+              <tbody>
+                <tr><td>Scrape public HTTPS when <code>x-source: kv</code></td><td>Old popups come back</td></tr>
+                <tr><td><code>Invoke-MigrateSitesToFleet.ps1</code> to refresh</td><td>Copies stale per-site KV</td></tr>
+                <tr><td><code>Invoke-DeepAssetSync.ps1</code> on fleet sites</td><td>Wrong key prefix</td></tr>
+                <tr><td>Omit <code>workerName</code> on a new batch</td><td>Lands <code>static.*</code> on server 2</td></tr>
+                <tr><td>Skip form-validation inject</td><td>Origin WP never has the tag</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="sec" id="s12" data-id="12">
+            <button class="pin" type="button" data-id="12" aria-label="Show annotation for go-live">12</button>
+            <p class="num">12 · Go-live checklist</p>
+            <h2>Lane IP · stay-WP · static.* QA · headers · form JS · purge</h2>
+            <ul class="checks">
+              <li>Correct origin IP for the lane</li>
+              <li>Stay-WP exclude checked</li>
+              <li>Preview QA <em>or</em> SkipRoutes on rescrape</li>
+              <li>Cache purged · hard-refresh verified</li>
+            </ul>
+          </section>
+        </div>
+      </div>
+
+      <aside>
+        <nav class="rail" aria-label="Page structure">
+          <h2>Process structure</h2>
+          <p class="count"><span id="rail-pos">01</span> / 12</p>
+          <ol id="rail"></ol>
+        </nav>
+        <div class="note" id="note" hidden>
+          <p class="tag" id="note-tag">Process</p>
+          <h3 id="note-title"></h3>
+          <p id="note-body"></p>
+        </div>
+      </aside>
+    </div>
+
+    <section class="why">
+      <h2>Why each stage earns its place</h2>
+      <p class="muted" id="why-lede">Process mode — what actually happens on a convert.</p>
+      <div class="why-grid" id="why"></div>
+    </section>
+
+    <footer>
+      Operating SOP: SOP-CONVERT-PREVIEW-CUTOVER-RESCRAPE.pdf · Machine setup: SOP-MACHINE-SETUP.pdf ·
+      Run from <code>C:\Users\&lt;You&gt;\Downloads\fleet</code>.
+    </footer>
+  </div>
+
+  <script>
+    const RAIL = [
+      ["01", "Source of truth", "Lock"],
+      ["02", "Workers & storage", "Split"],
+      ["03", "Path A preview", "Convert"],
+      ["04", "QA on static.*", "Prove"],
+      ["05", "Apex cutover", "Switch"],
+      ["06", "Form validation", "Inject"],
+      ["07", "Path B rescrape", "Refresh"],
+      ["08", "Path C edit loop", "CMS"],
+      ["09", "Stay-WordPress", "Exclude"],
+      ["10", "Proof", "Verify"],
+      ["11", "Do not", "Guard"],
+      ["12", "Go-live", "Ship"]
+    ];
+
+    const NOTES = {
+      process: {
+        "01": ["WordPress is the snapshot source", "Scrape with curl --resolve to the hosting IP. Public HTTPS on a fleet site recopies KV, including old popups."],
+        "02": ["B1–7 stay on server 2", "New batches use fleet-static-worker-server-1 and 165.140.157.43. Shared HTML_FLEET + fleet-static-assets."],
+        "03": ["Preview first, apex later", "Invoke-PreviewStaticOnFleet attaches static.{domain}/* only. Adam provision-originless is the same: preview, no origin IP, no apex."],
+        "04": ["QA vs live WP", "26-check, eyeball, forms, images. Sign-off before -IConfirmApexCutover. Theme misses showed why we stopped going straight to apex."],
+        "05": ["Cutover is a route change", "Same KV/R2 keys, now serving client.com. Keep the old per-site Worker ≥48h so routes can roll back."],
+        "06": ["Inject after every HTML scrape", "Elementor fleet file is /form-validation.js. CF7/WPForms use /form-validation-cf7-wpforms.js. Origin WP never includes the fleet snippet."],
+        "07": ["HTML-only when only HTML changed", "SkipRoutes if apex is already fleet. Full HTML+R2 when theme or media changed. Then inject form JS again."],
+        "08": ["Rollback, edit, rescrape, restore", "Do not type into KV. Default CMS path for an already-fleet site is Path C, not aaPanel dev. unless you need a separate staging copy."],
+        "09": ["Four domains are sacred", "Never convert or fleet-migrate roundrockfoundationrepairexperts, savannah, lakeworth, azaleapark."],
+        "10": ["Headers are the proof", "200 + x-source: kv + x-fleet-host. SVG badges must be image/svg+xml. Purge cache and hard-refresh."],
+        "11": ["Wrong scripts copy stale static", "No MigrateSitesToFleet for refresh. No DeepAssetSync on fleet. Never omit workerName on a new-batch Adam scrape."],
+        "12": ["Checklist before you walk away", "Lane IP, stay-WP, static.* QA or SkipRoutes, headers, form JS 200, images, purge."]
+      },
+      owners: {
+        "01": ["Usman owns live WP", "Pages, Elementor / CF7 / WPForms fields, CallRail, popups. John does not edit content in KV."],
+        "02": ["John owns Cloudflare", "Workers, KV, R2, routes, DNS for static.*. Token from the vault — never Slack."],
+        "03": ["John runs preview", "Usman confirms origin WP is ready. Sean does not QA apex until static.* exists."],
+        "04": ["Sean signs off", "26-check + eyeball vs origin. Conversion waits. Do not cut over on a yellow 26-check."],
+        "05": ["John cuts apex", "Flag -IConfirmApexCutover is required. Adam never switches apex/www."],
+        "06": ["Split by platform", "Usman: remaining WP. John: fleet inject. CF7 names = Texarkana skeleton. WPForms = Phone field type + Zip Code."],
+        "07": ["John rescrapes after Usman", "Ping when WP is saved. HTML-only if only HTML/popups changed."],
+        "08": ["Usman edits only on WP", "John rolls routes off, then back. Keep KV/R2 during rollback."],
+        "09": ["Lead confirms stay-WP", "Not a conversion decision. Leave them on WordPress."],
+        "10": ["John verifies headers", "Sean can re-spot-check forms after inject."],
+        "11": ["If unsure, ask John", "Wrong scrape path is how stale popups return."],
+        "12": ["Operator + QA", "John checks headers/JS. Sean checks the page. Usman only if a WP fix is still needed."]
+      },
+      guardrails: {
+        "01": ["Never scrape x-source: kv", "That is the static snapshot, not WordPress. Use --resolve to the hosting IP."],
+        "02": ["Do not move B1–7 to server 1", "Locked split. Omit workerName on Adam only for B1–7."],
+        "03": ["No apex until QA", "Preview route only. Cutover script refuses without -IConfirmApexCutover."],
+        "04": ["Do not treat terminal 200 as QA", "Theme/logo misses happened on ‘successful’ scrapes."],
+        "05": ["Do not delete WP or old Workers yet", "Need rollback window. Model B delete is lead-only after soak."],
+        "06": ["Wrong JS file = silent fail", "Elementor script will not bind CF7/WPForms. Do not use Downloads\\form-validation.js."],
+        "07": ["No MigrateSitesToFleet refresh", "Copies stale per-site KV. No DeepAssetSync (wrong keys). No Adam provision to refresh live fleet."],
+        "08": ["Do not edit production static HTML", "Rollback to WP. aaPanel dev. is optional, not the default."],
+        "09": ["Do not ‘just convert’ stay-WP", "Those four never go fleet."],
+        "10": ["SVG must be image/svg+xml", "application/xml shows broken rating badges."],
+        "11": ["New batch must send workerName", "Otherwise static.* attaches to server 2."],
+        "12": ["Skip the inject and forms die", "Re-inject after every HTML scrape, every time."]
+      }
+    };
+
+    const WHY = {
+      process: [
+        ["01", "One source", "Every refresh starts from current WP on the hosting IP, not from last week’s KV."],
+        ["03", "Preview absorbs scrape risk", "static.* lets QA fail without taking down client.com."],
+        ["05", "Cutover is just DNS/routes", "Content is already in HTML_FLEET. The switch is reversible."],
+        ["06", "WP cannot carry fleet JS", "The origin snapshot has no tag. Inject is a required step, not a nice-to-have."],
+        ["07", "HTML-only is cheaper", "Popup/copy fixes should not re-upload every image."],
+        ["08", "CMS needs WordPress", "Static has no wp-admin. Rollback is how Usman works."]
+      ],
+      owners: [
+        ["01", "Usman before scrape", "Field names and popups must be right on WP or the snapshot is wrong forever until the next scrape."],
+        ["04", "Sean before apex", "Conversion does not self-approve."],
+        ["05", "John on apex", "Adam stops at preview. That is intentional."],
+        ["06", "Two inject owners", "Remaining WP vs fleet. Different files for Elementor vs CF7/WPForms."]
+      ],
+      guardrails: [
+        ["01", "Public HTTPS is a trap", "If the host is already kv, you are copying yourself."],
+        ["02", "Server split is locked", "B1–7 live apex never moves to fleet-static-worker-server-1."],
+        ["11", "Named bad scripts", "MigrateSitesToFleet and DeepAssetSync look helpful and write the wrong store."],
+        ["09", "Stay-WP is not a backlog", "Those four domains are excluded, not queued."]
+      ]
+    };
+
+    const railEl = document.getElementById("rail");
+    const noteEl = document.getElementById("note");
+    const whyEl = document.getElementById("why");
+    const whyLede = document.getElementById("why-lede");
+    const modeLabel = { process: "Process", owners: "Owners", guardrails: "Guardrails" };
+    let mode = "process";
+    let pinned = null;
+    let hover = null;
+
+    RAIL.forEach(([id, label, verb]) => {
+      const li = document.createElement("li");
+      li.innerHTML = `<button type="button" data-id="${id}"><span class="n">${id}</span><span>${label}</span><span class="verb">${verb}</span></button>`;
+      railEl.appendChild(li);
+    });
+
+    function currentId() {
+      return pinned || hover || document.querySelector(".sec.is-active")?.dataset.id || "01";
+    }
+
+    function renderNote() {
+      const id = currentId();
+      const pack = NOTES[mode][id];
+      if (!pack) { noteEl.hidden = true; return; }
+      noteEl.hidden = false;
+      document.getElementById("note-tag").textContent = modeLabel[mode] + " · " + id;
+      document.getElementById("note-title").textContent = pack[0];
+      document.getElementById("note-body").textContent = pack[1];
+      railEl.querySelectorAll("button").forEach((b) => b.classList.toggle("is-on", b.dataset.id === id));
+      document.querySelectorAll(".pin").forEach((p) => p.setAttribute("aria-pressed", p.dataset.id === id ? "true" : "false"));
+    }
+
+    function renderWhy() {
+      whyLede.textContent = modeLabel[mode] + " notes — hover a pin or rail row; click to keep it open.";
+      whyEl.innerHTML = WHY[mode].map(([id, t, b]) =>
+        `<article class="why-item"><div class="n">${id}</div><h3>${t}</h3><p>${b}</p></article>`
+      ).join("");
+    }
+
+    function setMode(next) {
+      mode = next;
+      document.querySelectorAll(".modes button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.mode === mode ? "true" : "false"));
+      renderNote();
+      renderWhy();
+    }
+
+    function show(id, lock) {
+      if (lock) pinned = pinned === id ? null : id;
+      else hover = id;
+      renderNote();
+    }
+
+    document.querySelectorAll(".pin").forEach((p) => {
+      p.addEventListener("mouseenter", () => show(p.dataset.id, false));
+      p.addEventListener("mouseleave", () => { hover = null; renderNote(); });
+      p.addEventListener("click", () => show(p.dataset.id, true));
+    });
+    railEl.addEventListener("mouseover", (e) => {
+      const b = e.target.closest("button");
+      if (b) show(b.dataset.id, false);
+    });
+    railEl.addEventListener("mouseleave", () => { hover = null; renderNote(); });
+    railEl.addEventListener("click", (e) => {
+      const b = e.target.closest("button");
+      if (!b) return;
+      show(b.dataset.id, true);
+      document.getElementById("s" + b.dataset.id).scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    document.querySelectorAll(".modes button").forEach((b) => b.addEventListener("click", () => setMode(b.dataset.mode)));
+
+    const io = new IntersectionObserver((entries) => {
+      const vis = entries.filter((e) => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (!vis) return;
+      document.querySelectorAll(".sec").forEach((s) => s.classList.toggle("is-active", s === vis.target));
+      document.getElementById("rail-pos").textContent = vis.target.dataset.id;
+      if (!pinned && !hover) renderNote();
+    }, { rootMargin: "-20% 0px -55% 0px", threshold: [0.2, 0.5, 0.8] });
+    document.querySelectorAll(".sec").forEach((s) => io.observe(s));
+
+    setMode("process");
+    renderNote();
+  </script>
+</body>
+</html>

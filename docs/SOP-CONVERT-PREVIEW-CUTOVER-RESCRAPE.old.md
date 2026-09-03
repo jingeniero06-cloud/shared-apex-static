@@ -11,8 +11,6 @@
 
 This is the **operating workflow** for fleet static. It replaces “straight to live apex” for new converts. WordPress on the hosting IP is always the source of truth.
 
-New machine first: [SOP-MACHINE-SETUP.pdf](./SOP-MACHINE-SETUP.pdf).
-
 ---
 
 ## 1. Purpose
@@ -168,11 +166,14 @@ Do not send copies under `Downloads\form-validation.js` or `static-conversion` �
 
 ## 8. Stay-WordPress (never convert)
 
-Hard exclude (other Cloudflare account):
+Hard excludes:
 
+- `roundrockfoundationrepairexperts.com`
+- `solidfoundationrepairofsavannah.com`
+- `solidfoundationrepairoflakeworth.com`
 - `azaleaparkfoundationrepair.com`
 
-Round Rock, Savannah, and Lake Worth are **not** stay-WP — they can convert / fleet like the rest.
+Full list: `static-conversion\reports\batch1-7-convert-20260808-173900\exclude-stay-wordpress.txt`
 
 ---
 
@@ -206,7 +207,6 @@ Round Rock, Savannah, and Lake Worth are **not** stay-WP — they can convert / 
 
 ## 11. Related docs
 
-- [SOP-MACHINE-SETUP.pdf](./SOP-MACHINE-SETUP.pdf) — new Windows PC kit, junctions, `.env`
 - [SOP-FLEET-STATIC-WORKFLOW.md](./SOP-FLEET-STATIC-WORKFLOW.md) — 13 Aug architecture SOP
 - [01-big-picture.md](./01-big-picture.md) — Model A vs B
 - [07-rollback-and-edit.md](./07-rollback-and-edit.md) — revert scripts
